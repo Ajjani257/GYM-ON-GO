@@ -1,7 +1,8 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { findUserByEmail, createUser } from '@/lib/db';
+import dbConnect from '@/lib/mongodb';
+import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
 const handler = NextAuth({
@@ -17,11 +18,12 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const user = await findUserByEmail(credentials.email);
+        await dbConnect();
+        const user = await User.findOne({ email: credentials.email });
         if (!user) throw new Error('No user found with this email');
         const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) throw new Error('Invalid password');
-        return { id: user._id, name: user.name, email: user.email };
+        return { id: user._id.toString(), name: user.name, email: user.email };
       },
     }),
   ],
@@ -29,10 +31,15 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account.provider === 'google') {
-        const existing = await findUserByEmail(user.email);
+        await dbConnect();
+        const existing = await User.findOne({ email: user.email });
         if (!existing) {
           const randomPass = await bcrypt.hash(Math.random().toString(36), 10);
-          await createUser({ name: user.name, email: user.email, password: randomPass });
+          await User.create({
+            name: user.name,
+            email: user.email,
+            password: randomPass,
+          });
         }
       }
       return true;
@@ -40,8 +47,9 @@ const handler = NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         if (account?.provider === 'google') {
-          const dbUser = await findUserByEmail(user.email);
-          if (dbUser) token.id = dbUser._id;
+          await dbConnect();
+          const dbUser = await User.findOne({ email: user.email });
+          if (dbUser) token.id = dbUser._id.toString();
         } else {
           token.id = user.id;
         }

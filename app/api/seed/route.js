@@ -1,4 +1,5 @@
-import { seedGyms } from '@/lib/db';
+import dbConnect from '@/lib/mongodb';
+import Gym from '@/models/Gym';
 import { NextResponse } from 'next/server';
 
 const SEED_GYMS = [
@@ -107,6 +108,12 @@ const SEED_GYMS = [
 ];
 
 export async function POST() {
-  const gyms = await seedGyms(SEED_GYMS);
-  return NextResponse.json({ message: `Seeded ${gyms.length} gyms`, gyms });
+  try {
+    await dbConnect();
+    await Gym.deleteMany({}); // Clear existing
+    const gyms = await Gym.insertMany(SEED_GYMS);
+    return NextResponse.json({ message: `Seeded ${gyms.length} gyms`, gyms });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
