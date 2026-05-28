@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "mppgvtlopzvwsr",
+    "name": "Aditya Jani",
+    "email": "ajjani257@gmail.com",
+    "password": "$2b$10$n3TTMfvZ3zcHodYBcYemHumMTdtcBieH2X17uQ1kSMG4Eaer1wpyK",
+    "totalWorkouts": 0,
+    "dayStreak": 0,
+    "thisMonth": 0,
+    "createdAt": "2026-05-28T12:26:21.468Z"
+  },
+  {
+    "_id": "mpph5iagj3rpni",
+    "name": "Test User",
+    "email": "testuser@example.com",
+    "password": "$2b$10$R97r9RQr/b2IyssHZmm0Quo3lFoTbMX0YTfw95HcaJON5wZ7tXg6W",
+    "totalWorkouts": 0,
+    "dayStreak": 0,
+    "thisMonth": 0,
+    "createdAt": "2026-05-28T12:33:53.368Z"
+  }
+]
