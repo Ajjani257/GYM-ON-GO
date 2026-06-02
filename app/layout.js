@@ -1,27 +1,36 @@
 import './globals.css';
 import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { ToastProvider } from '@/components/Toast';
+import { Inter, Outfit } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
-  title: "GYM-ON-GO — India's First Pay-Per-Use Fitness Platform",
-  description: "Book gym sessions by the hour across 500+ partner gyms in India. No memberships. No lock-ins.",
+  title: "GYM-ON-GO — Flexible Gym Sessions Near You",
+  description: "Find nearby gyms, compare crowd levels, and book hourly workout sessions without a membership.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}",
+          }}
+        />
       </head>
-      <body>
+      <body className={`${inter.variable} ${outfit.variable}`}>
         <Providers>
-          <div className="blue-glow tl"></div>
-          <div className="blue-glow br"></div>
-          <Navbar />
-          {children}
+          <ToastProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </ToastProvider>
         </Providers>
       </body>
     </html>

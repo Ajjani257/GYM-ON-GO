@@ -12,10 +12,12 @@ export async function GET(request) {
     const crowd = searchParams.get('crowd');
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
+    const equip = searchParams.get('equipment');
 
     if (city) query.city = city;
     if (crowd) query.crowdLevel = crowd;
     if (maxPrice) query.pricePerHour = { $lte: Number(maxPrice) };
+    if (equip) query.equipment = { $all: equip.split(',') };
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },

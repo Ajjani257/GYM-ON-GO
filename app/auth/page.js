@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Mail, Lock, User } from 'lucide-react';
+import { useToast } from '@/components/Toast';
 
 export default function AuthPage() {
   const [tab, setTab] = useState('signin');
@@ -9,8 +11,10 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { addToast } = useToast();
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -18,12 +22,16 @@ export default function AuthPage() {
     const res = await signIn('credentials', { email, password, redirect: false });
     setLoading(false);
     if (res?.error) setError(res.error);
-    else router.push('/dashboard');
+    else {
+      addToast('Signed in successfully!');
+      router.push('/dashboard');
+    }
   }
 
   async function handleSignUp(e) {
     e.preventDefault();
     setError(''); setLoading(true);
+    if (password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return; }
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,7 +42,10 @@ export default function AuthPage() {
     const signin = await signIn('credentials', { email, password, redirect: false });
     setLoading(false);
     if (signin?.error) setError(signin.error);
-    else router.push('/dashboard');
+    else {
+      addToast('Account created successfully!');
+      router.push('/dashboard');
+    }
   }
 
   return (
@@ -50,42 +61,43 @@ export default function AuthPage() {
       <div className="auth-right">
         {tab === 'signin' ? (
           <form className="auth-form" onSubmit={handleSignIn}>
-            <h2>WELCOME BACK</h2>
+            <h2>Welcome back</h2>
             <p className="auth-sub">Sign in to continue your fitness journey</p>
-            <button type="button" className="btn-google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })}><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"/> CONTINUE WITH GOOGLE</button>
+            <button type="button" className="btn-google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })}><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"/> Continue with Google</button>
             <div className="auth-divider"><span>OR</span></div>
             <div className="form-group">
-              <label>EMAIL</label>
-              <div className="input-wrap"><i className="fa-regular fa-envelope"></i><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="i@example.com" required /></div>
+              <label>Email</label>
+              <div className="input-wrap"><Mail size={16} /><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="i@example.com" required /></div>
             </div>
             <div className="form-group">
-              <label>PASSWORD</label>
-              <div className="input-wrap"><i className="fa-solid fa-lock"></i><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••" required /></div>
+              <label>Password</label>
+              <div className="input-wrap"><Lock size={16} /><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••" required /></div>
             </div>
             {error && <div className="auth-error">{error}</div>}
-            <button className="btn-auth" disabled={loading}>{loading ? 'SIGNING IN...' : 'SIGN IN'}</button>
+            <button className="btn-auth" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
             <p className="auth-switch">Don&apos;t have an account? <a href="#" onClick={(e) => { e.preventDefault(); setTab('signup'); setError(''); }}>Sign up</a></p>
           </form>
         ) : (
           <form className="auth-form" onSubmit={handleSignUp}>
-            <h2>CREATE ACCOUNT</h2>
+            <h2>Create account</h2>
             <p className="auth-sub">Start your pay-per-use fitness experience</p>
-            <button type="button" className="btn-google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })}><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"/> CONTINUE WITH GOOGLE</button>
+            <button type="button" className="btn-google" onClick={() => signIn('google', { callbackUrl: '/dashboard' })}><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="20"/> Continue with Google</button>
             <div className="auth-divider"><span>OR</span></div>
             <div className="form-group">
-              <label>FULL NAME</label>
-              <div className="input-wrap"><i className="fa-regular fa-user"></i><input value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" required /></div>
+              <label>Full name</label>
+              <div className="input-wrap"><User size={16} /><input value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" required /></div>
             </div>
             <div className="form-group">
-              <label>EMAIL</label>
-              <div className="input-wrap"><i className="fa-regular fa-envelope"></i><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></div>
+              <label>Email</label>
+              <div className="input-wrap"><Mail size={16} /><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></div>
             </div>
             <div className="form-group">
-              <label>PASSWORD</label>
-              <div className="input-wrap"><i className="fa-solid fa-lock"></i><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></div>
+              <label>Password</label>
+              <div className="input-wrap"><Lock size={16} /><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></div>
+              <p style={{color:'var(--muted)', fontSize:'0.8rem', marginTop:'4px'}}>At least 6 characters</p>
             </div>
             {error && <div className="auth-error">{error}</div>}
-            <button className="btn-auth" disabled={loading}>{loading ? 'CREATING...' : 'CREATE ACCOUNT'}</button>
+            <button className="btn-auth" disabled={loading}>{loading ? 'Creating...' : 'Create account'}</button>
             <p className="auth-switch">Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setTab('signin'); setError(''); }}>Sign in</a></p>
           </form>
         )}

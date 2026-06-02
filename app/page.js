@@ -1,86 +1,154 @@
+'use client';
 import Link from 'next/link';
+import { MapPin, CalendarCheck, QrCode, ArrowRight, ShieldCheck, Zap, LockOpen } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 export default function Home() {
+  const steps = [
+    { icon: <MapPin size={24} />, num: '01', title: 'Start with your area', desc: 'Search by neighborhood and compare gyms by crowd level, price, and amenities.' },
+    { icon: <CalendarCheck size={24} />, num: '02', title: 'Reserve a time that fits', desc: 'Choose an hourly slot for a quick session, a weekend lift, or a late-night workout.' },
+    { icon: <QrCode size={24} />, num: '03', title: 'Walk in with your QR', desc: 'Your booking is ready at the desk, so you can skip the sales pitch and start training.' },
+  ];
+
   return (
     <>
-      {/* HERO */}
       <section className="hero-section">
         <div className="hero-bg">
-          <img src="https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?w=1400&q=80&fit=crop&crop=top" alt="Fitness" />
+          <img src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=1600&q=82&fit=crop&crop=center" alt="People training in a bright gym" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">INDIA&apos;S FIRST PAY-PER-USE FITNESS PLATFORM</div>
-          <h1 className="hero-title">YOUR FITNESS<br/><span>JOURNEY</span><br/>STARTS HERE</h1>
-          <p className="hero-sub">Book gym sessions by the hour. No memberships. No lock-ins. Just fitness, on your terms.</p>
-          <div className="hero-ctas">
-            <Link href="/gyms"><button className="btn-primary">FIND GYMS NEAR YOU &nbsp;›</button></Link>
-            <Link href="/partners"><button className="btn-outline">PARTNER WITH US</button></Link>
-          </div>
+          <motion.div 
+            className="hero-copy"
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <div className="hero-badge">
+              <Zap /> Gym access, only when you need it
+            </div>
+            <h1 className="hero-title">Find a good gym for the hour you actually have.</h1>
+            <p className="hero-sub">Book verified gyms nearby, check how busy they are, and pay for just the session you use.</p>
+            <div className="hero-ctas">
+              <Link href="/gyms"><button className="btn-primary">Browse gyms <ArrowRight size={18} /></button></Link>
+              <Link href="/partners"><button className="btn-outline">For gym owners</button></Link>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="booking-preview" aria-label="Sample gym booking"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            whileHover={{ y: -8 }}
+          >
+            <div className="preview-top">
+              <span>Suggested slot</span>
+              <strong>Today · 7:00 PM</strong>
+            </div>
+            <div className="preview-gym">
+              <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=320&q=80&fit=crop&crop=center" alt="Strength training zone" />
+              <div>
+                <h2>Forge Fitness</h2>
+                <p><MapPin /> Navrangpura · 12 min away</p>
+              </div>
+            </div>
+            <div className="preview-chip-row">
+              <span><ShieldCheck /> Moderate crowd</span>
+              <span><LockOpen /> Free lockers</span>
+            </div>
+            <div className="preview-row">
+              <span>Session price</span>
+              <strong>₹180/hr</strong>
+            </div>
+            <div className="preview-row">
+              <span>Check-in</span>
+              <strong>QR ready</strong>
+            </div>
+            <Link href="/gyms"><button className="preview-action">See available slots</button></Link>
+          </motion.div>
         </div>
       </section>
 
-      {/* STATS */}
       <section className="stats-section">
         <div className="container">
-          <div className="stats-grid">
-            <div><div className="stat-num">500+</div><div className="stat-label">Partner Gyms</div></div>
-            <div><div className="stat-num">50K+</div><div className="stat-label">Active Users</div></div>
-            <div><div className="stat-num">10+</div><div className="stat-label">Cities</div></div>
-            <div><div className="stat-num">4.8</div><div className="stat-label">App Rating</div></div>
-          </div>
+          <motion.div 
+            className="stats-grid"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp}><div className="stat-num">₹80</div><div className="stat-label">starting sessions</div></motion.div>
+            <motion.div variants={fadeInUp}><div className="stat-num">Live</div><div className="stat-label">crowd updates</div></motion.div>
+            <motion.div variants={fadeInUp}><div className="stat-num">QR</div><div className="stat-label">check-in included</div></motion.div>
+            <motion.div variants={fadeInUp}><div className="stat-num">Zero</div><div className="stat-label">lock-in required</div></motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
       <section className="how-section">
         <div className="container">
-          <div className="section-badge">HOW IT WORKS</div>
-          <h2 className="section-title">Fitness on Your Terms</h2>
-          <div className="steps-grid">
-            {[
-              { icon: 'fa-magnifying-glass-location', num: '01', title: 'Discover Gyms', desc: 'Find gyms near you with real-time crowd levels, amenities, and ratings.' },
-              { icon: 'fa-calendar-check', num: '02', title: 'Book Instantly', desc: 'Pick hourly slots that fit your schedule. No membership locks.' },
-              { icon: 'fa-indian-rupee-sign', num: '03', title: 'Pay Per Use', desc: 'UPI, cards, or wallet — pay only for what you use.' },
-              { icon: 'fa-qrcode', num: '04', title: 'QR Check-in', desc: 'Walk in, scan your QR code, and start your session.' },
-            ].map((s, i) => (
-              <div className="step-card" key={i}>
-                <div className="step-icon"><i className={`fa-solid ${s.icon}`}></i></div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+          >
+            <div className="section-kicker">How it works</div>
+            <h2 className="section-title">Built for normal, slightly messy days.</h2>
+          </motion.div>
+          
+          <motion.div 
+            className="steps-grid"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
+            {steps.map((s, i) => (
+              <motion.div className="step-card" key={i} variants={fadeInUp}>
+                <div className="step-icon">{s.icon}</div>
                 <div className="step-num">{s.num}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
       <section className="cta-section">
         <div className="container">
-          <div className="cta-box">
-            <h2>READY TO START?</h2>
-            <p>Join thousands of fitness enthusiasts who&apos;ve ditched expensive memberships for flexible, pay-per-use workouts.</p>
-            <Link href="/auth"><button className="btn-primary">GET STARTED FREE &nbsp;›</button></Link>
-          </div>
+          <motion.div 
+            className="cta-box"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+          >
+            <div>
+              <h2>Keep your workout flexible.</h2>
+              <p>Pick a nearby gym when your schedule opens up, then check in with your phone.</p>
+            </div>
+            <Link href="/auth"><button className="btn-primary">Create account</button></Link>
+          </motion.div>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="footer">
-        <div className="container footer-inner">
-          <div className="logo">
-            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-              <rect x="2" y="11" width="6" height="6" rx="1.5" fill="#ef4444"/>
-              <rect x="20" y="11" width="6" height="6" rx="1.5" fill="#ef4444"/>
-              <rect x="7" y="13" width="14" height="2" rx="1" fill="#ef4444"/>
-              <rect x="4" y="8" width="2" height="12" rx="1" fill="#ef4444"/>
-              <rect x="22" y="8" width="2" height="12" rx="1" fill="#ef4444"/>
-            </svg>
-            <span>GYM-ON-GO</span>
-          </div>
-          <div className="footer-copy">© 2024 GYM-ON-GO. All rights reserved.</div>
-        </div>
-      </footer>
     </>
   );
 }
