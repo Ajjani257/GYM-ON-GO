@@ -24,9 +24,20 @@ export async function POST(request) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 });
+    }
+
+    const phoneClean = phone.replace(/[^0-9+]/g, '');
+    if (phoneClean.length < 10 || phoneClean.length > 15) {
+      return NextResponse.json({ error: 'Invalid phone number format (must be 10-15 digits)' }, { status: 400 });
+    }
+
     const application = await Partner.create({ gymName, ownerName, email, phone, city });
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

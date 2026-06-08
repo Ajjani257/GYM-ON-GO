@@ -19,6 +19,13 @@ const GymSchema = new mongoose.Schema({
     time: String,
     capacity: { type: Number, default: 20 },
   }],
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  pricingRules: [{
+    dayOfWeek: [Number],
+    startTime: String,
+    endTime: String,
+    multiplier: { type: Number, default: 1.0 }
+  }],
 }, { timestamps: true });
 
 export default mongoose.models.Gym || mongoose.model('Gym', GymSchema);

@@ -1,22 +1,101 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { Moon, Sun, LogOut, Menu, X, Home, MapPin, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname, useSearchParams } from 'next/navigation';
+
+function NavLinksList({ session }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab');
+
+  const isHome = pathname === '/';
+  const isExplore = pathname.startsWith('/gyms') && !pathname.startsWith('/gyms/compare');
+  const isCompare = pathname.startsWith('/compare') || pathname === '/gyms/compare';
+  const isBookings = pathname === '/dashboard' && tab !== 'saved';
+  const isWishlist = pathname === '/dashboard' && tab === 'saved';
+  const isPartners = pathname.startsWith('/partners');
+  const isPartnerConsole = pathname.startsWith('/partner');
+  const isBlogs = pathname.startsWith('/blogs');
+  const isPlans = pathname.startsWith('/plans');
+
+  return (
+    <div className="nav-links">
+      <Link href="/" className={`nav-link ${isHome ? 'active' : ''}`}>Home</Link>
+      <Link href="/gyms" className={`nav-link ${isExplore ? 'active' : ''}`}>Explore</Link>
+      {session && (
+        <>
+          {session.user.role === 'partner' ? (
+            <Link href="/partner" className={`nav-link ${isPartnerConsole ? 'active' : ''}`}>Partner Console</Link>
+          ) : (
+            <>
+              <Link href="/dashboard?tab=upcoming" className={`nav-link ${isBookings ? 'active' : ''}`}>Bookings</Link>
+              <Link href="/dashboard?tab=saved" className={`nav-link ${isWishlist ? 'active' : ''}`}>Wishlist</Link>
+            </>
+          )}
+        </>
+      )}
+      <Link href="/plans" className={`nav-link ${isPlans ? 'active' : ''}`}>Plans</Link>
+      <Link href="/blogs" className={`nav-link ${isBlogs ? 'active' : ''}`}>Blogs</Link>
+      <Link href="/partners" className={`nav-link ${isPartners ? 'active' : ''}`}>Let's Collab</Link>
+    </div>
+  );
+}
+
+function MobileNavLinksList({ session, setMobileOpen }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab');
+
+  const isHome = pathname === '/';
+  const isExplore = pathname.startsWith('/gyms') && !pathname.startsWith('/gyms/compare');
+  const isBookings = pathname === '/dashboard' && tab !== 'saved';
+  const isWishlist = pathname === '/dashboard' && tab === 'saved';
+  const isPartners = pathname.startsWith('/partners');
+  const isDashboard = pathname === '/dashboard' && !tab;
+  const isPartnerConsole = pathname.startsWith('/partner');
+  const isBlogs = pathname.startsWith('/blogs');
+  const isPlans = pathname.startsWith('/plans');
+
+  return (
+    <>
+      <Link href="/" className={`drawer-link ${isHome ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Home</Link>
+      <Link href="/gyms" className={`drawer-link ${isExplore ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Find Gyms</Link>
+      <Link href="/plans" className={`drawer-link ${isPlans ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Plans</Link>
+      <Link href="/blogs" className={`drawer-link ${isBlogs ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Blogs</Link>
+      <Link href="/partners" className={`drawer-link ${isPartners ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Let's Collab</Link>
+      
+      <div style={{ height: '1px', background: 'var(--line)', margin: '16px 0' }} />
+      
+      {session ? (
+        <>
+          {session.user.role === 'partner' ? (
+            <Link href="/partner" className={`drawer-link ${isPartnerConsole ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Partner Console</Link>
+          ) : (
+            <>
+              <Link href="/dashboard" className={`drawer-link ${isDashboard ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Dashboard</Link>
+              <Link href="/dashboard?tab=upcoming" className={`drawer-link ${isBookings ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>My Bookings</Link>
+              <Link href="/dashboard?tab=saved" className={`drawer-link ${isWishlist ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Gym Wishlist</Link>
+            </>
+          )}
+          <button className="drawer-link" onClick={() => { signOut({ callbackUrl: '/' }); setMobileOpen(false); }} style={{ textAlign: 'left' }}>Sign out</button>
+        </>
+      ) : (
+        <>
+          <Link href="/auth" className={`drawer-link ${pathname === '/auth' ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Sign in</Link>
+          <Link href="/auth" className={`drawer-link ${pathname === '/auth' ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Create account</Link>
+        </>
+      )}
+    </>
+  );
+}
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'light';
-    return localStorage.getItem('theme') || 'light';
-  });
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -24,36 +103,21 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, []);
-
-  function toggleTheme() {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    localStorage.setItem('theme', nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-  }
-
-  const themeLabel = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
-
   return (
     <>
       <motion.nav
         className="navbar"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
+        initial={{ y: -100, x: "-50%" }}
+        animate={{ y: 0, x: "-50%" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         style={{ borderBottom: scrolled ? '' : '1px solid transparent' }}
       >
         <div className="nav-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button 
-              className="menu-left-btn" 
+              className="menu-left-btn hamburger" 
               onClick={() => setMobileOpen(!mobileOpen)} 
               aria-label="Toggle menu"
-              style={{ background: 'transparent', color: 'var(--text)', display: 'flex', alignItems: 'center', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -70,36 +134,31 @@ export default function Navbar() {
           </div>
 
           {/* Desktop nav */}
-          {!session ? (
-            <>
+          <Suspense fallback={
               <div className="nav-links">
-                <Link href="/gyms" className="nav-link">Gyms</Link>
-                <Link href="/partners" className="nav-link">Partners</Link>
-              </div>
-              <div className="nav-actions">
-                <button className="theme-toggle" onClick={toggleTheme} title={themeLabel} aria-label={themeLabel}>
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-                <Link href="/auth"><button className="btn-nav btn-signin">Sign in</button></Link>
-                <Link href="/auth"><button className="btn-nav btn-get-started">Start</button></Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="nav-links">
-                <Link href="/gyms" className="nav-link">Gyms</Link>
-              </div>
-              <div className="nav-actions">
-                <button className="theme-toggle" onClick={toggleTheme} title={themeLabel} aria-label={themeLabel}>
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-                <Link href="/dashboard"><button className="btn-nav btn-signin">Dashboard</button></Link>
+              <Link href="/" className="nav-link">Home</Link>
+              <Link href="/gyms" className="nav-link">Explore</Link>
+              <Link href="/partners" className="nav-link">Let's Collab</Link>
+            </div>
+          }>
+            <NavLinksList session={session} />
+          </Suspense>
+
+          <div className="nav-actions">
+            {session ? (
+              <>
+                <Link href={session.user.role === 'partner' ? "/partner" : "/dashboard"}><button className="btn-nav btn-signin" title="Wallet & Profile"><UserIcon size={18} /></button></Link>
                 <button className="btn-nav btn-signin" onClick={() => signOut({ callbackUrl: '/' })} title="Logout">
                   <LogOut size={18} />
                 </button>
-              </div>
-            </>
-          )}
+              </>
+            ) : (
+              <>
+                <Link href="/auth"><button className="btn-nav btn-signin">Sign in</button></Link>
+                <Link href="/auth"><button className="btn-nav btn-get-started">Start</button></Link>
+              </>
+            )}
+          </div>
         </div>
       </motion.nav>
 
@@ -135,27 +194,42 @@ export default function Navbar() {
                 </button>
               </div>
               
-              <Link href="/" className="drawer-link" onClick={() => setMobileOpen(false)}>Home</Link>
-              <Link href="/gyms" className="drawer-link" onClick={() => setMobileOpen(false)}>Find Gyms</Link>
-              <Link href="/partners" className="drawer-link" onClick={() => setMobileOpen(false)}>Partner with Us</Link>
-              
-              <div style={{ height: '1px', background: 'var(--line)', margin: '16px 0' }} />
-              
-              {session ? (
+              <Suspense fallback={
                 <>
-                  <Link href="/dashboard" className="drawer-link" onClick={() => setMobileOpen(false)}>Dashboard</Link>
-                  <button className="drawer-link" onClick={() => { signOut({ callbackUrl: '/' }); setMobileOpen(false); }} style={{ textAlign: 'left' }}>Sign out</button>
+                  <Link href="/" className="drawer-link" onClick={() => setMobileOpen(false)}>Home</Link>
+                  <Link href="/gyms" className="drawer-link" onClick={() => setMobileOpen(false)}>Find Gyms</Link>
+                  <Link href="/partners" className="drawer-link" onClick={() => setMobileOpen(false)}>Let's Collab</Link>
                 </>
-              ) : (
-                <>
-                  <Link href="/auth" className="drawer-link" onClick={() => setMobileOpen(false)}>Sign in</Link>
-                  <Link href="/auth" className="drawer-link" onClick={() => setMobileOpen(false)}>Create account</Link>
-                </>
-              )}
+              }>
+                <MobileNavLinksList session={session} setMobileOpen={setMobileOpen} />
+              </Suspense>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* Mobile Bottom Navigation Bar (True One-Handed Use) */}
+      <nav className="mobile-bottom-nav">
+        <Link href="/" className="bottom-nav-item">
+          <Home size={20} />
+          <span>Home</span>
+        </Link>
+        <Link href="/gyms" className="bottom-nav-item">
+          <MapPin size={20} />
+          <span>Gyms</span>
+        </Link>
+        {session ? (
+          <Link href={session.user.role === 'partner' ? "/partner" : "/dashboard"} className="bottom-nav-item">
+            <UserIcon size={20} />
+            <span>Console</span>
+          </Link>
+        ) : (
+          <Link href="/auth" className="bottom-nav-item">
+            <UserIcon size={20} />
+            <span>Sign In</span>
+          </Link>
+        )}
+      </nav>
     </>
   );
 }

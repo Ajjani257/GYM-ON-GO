@@ -1,20 +1,55 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, User, CheckCircle, XCircle, Loader2, Gift } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import { Suspense } from 'react';
 
-export default function AuthPage() {
+function AuthContent() {
   const [tab, setTab] = useState('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [refStatus, setRefStatus] = useState(null); // null | 'checking' | { valid, referrerName } | { valid: false }
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
+  const debounceRef = useRef(null);
+
+  // Auto-fill referral code from ?ref= query param
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setReferralCode(ref.toUpperCase());
+      setTab('signup');
+    }
+  }, [searchParams]);
+
+  // Real-time referral code verification with debounce
+  useEffect(() => {
+    if (!referralCode || referralCode.length < 5) {
+      setRefStatus(null);
+      return;
+    }
+
+    setRefStatus('checking');
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/verify-referral?code=${encodeURIComponent(referralCode.trim().toUpperCase())}`);
+        const data = await res.json();
+        setRefStatus(data);
+      } catch {
+        setRefStatus({ valid: false });
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [referralCode]);
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -23,7 +58,7 @@ export default function AuthPage() {
     setLoading(false);
     if (res?.error) setError(res.error);
     else {
-      addToast('Signed in successfully!');
+      addToast('Signed in successfully!', 'success');
       router.push('/dashboard');
     }
   }
@@ -35,7 +70,7 @@ export default function AuthPage() {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, referralCode: referralCode.trim() || undefined }),
     });
     const data = await res.json();
     if (!res.ok) { setError(data.error); setLoading(false); return; }
@@ -43,7 +78,11 @@ export default function AuthPage() {
     setLoading(false);
     if (signin?.error) setError(signin.error);
     else {
-      addToast('Account created successfully!');
+      if (data.welcomeCredit) {
+        addToast(`🎉 Account created! ₹${data.welcomeCredit} welcome credit added to your wallet.`, 'success');
+      } else {
+        addToast('Account created successfully!', 'success');
+      }
       router.push('/dashboard');
     }
   }
@@ -54,8 +93,8 @@ export default function AuthPage() {
         <img src="https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?w=800&q=80&fit=crop&crop=top" alt="Fitness" />
         <div className="auth-left-overlay"></div>
         <div className="auth-left-text">
-          <h2>YOUR FITNESS<br/><span className="red">JOURNEY</span><br/>STARTS HERE</h2>
-          <p>Join thousands of fitness enthusiasts enjoying flexible, pay-per-use gym access across India.</p>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 900 }}>Your fitness<br/><span style={{ color: 'var(--red)' }}>journey</span><br/>starts here</h2>
+          <p>Get instant, flexible access to premium local gyms with a single scan. No monthly subscriptions, no contracts.</p>
         </div>
       </div>
       <div className="auth-right">
@@ -96,6 +135,42 @@ export default function AuthPage() {
               <div className="input-wrap"><Lock size={16} /><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></div>
               <p style={{color:'var(--muted)', fontSize:'0.8rem', marginTop:'4px'}}>At least 6 characters</p>
             </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Gift size={14} style={{ color: 'var(--amber)' }} />
+                Referral Code <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(Optional — get ₹50 free)</span>
+              </label>
+              <div className="input-wrap" style={{ position: 'relative' }}>
+                <User size={16} />
+                <input
+                  value={referralCode}
+                  onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="GYMGO-XXXXX"
+                  style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                />
+                {/* Verification status icon */}
+                {refStatus === 'checking' && (
+                  <Loader2 size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', animation: 'spin 1s linear infinite' }} />
+                )}
+                {refStatus && refStatus !== 'checking' && refStatus.valid && (
+                  <CheckCircle size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--green)' }} />
+                )}
+                {refStatus && refStatus !== 'checking' && !refStatus.valid && referralCode.length >= 5 && (
+                  <XCircle size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--red)' }} />
+                )}
+              </div>
+              {/* Referral feedback text */}
+              {refStatus && refStatus !== 'checking' && refStatus.valid && (
+                <p style={{ color: 'var(--green)', fontSize: '0.82rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <CheckCircle size={12} /> Valid code! You&apos;ll get <strong>₹50 free credits</strong> from {refStatus.referrerName}&apos;s invite.
+                </p>
+              )}
+              {refStatus && refStatus !== 'checking' && !refStatus.valid && referralCode.length >= 5 && (
+                <p style={{ color: 'var(--red)', fontSize: '0.82rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <XCircle size={12} /> Invalid referral code.
+                </p>
+              )}
+            </div>
             {error && <div className="auth-error">{error}</div>}
             <button className="btn-auth" disabled={loading}>{loading ? 'Creating...' : 'Create account'}</button>
             <p className="auth-switch">Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setTab('signin'); setError(''); }}>Sign in</a></p>
@@ -103,5 +178,13 @@ export default function AuthPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)'}}>Loading...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }

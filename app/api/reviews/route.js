@@ -3,6 +3,8 @@ import Review from '@/models/Review';
 import Gym from '@/models/Gym';
 import User from '@/models/User';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(request) {
   try {
@@ -21,14 +23,17 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await dbConnect();
-    const { userId, gymId, rating, comment } = await request.json();
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!userId || !gymId || !rating || !comment) {
+    await dbConnect();
+    const { gymId, rating, comment } = await request.json();
+
+    if (!gymId || !rating || !comment) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
-    const review = await Review.create({ userId, gymId, rating, comment });
+    const review = await Review.create({ userId: session.user.id, gymId, rating, comment });
 
     // Update gym average rating
     const gym = await Gym.findById(gymId);

@@ -5,7 +5,7 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -23,46 +23,72 @@ const handler = NextAuth({
         if (!user) throw new Error('No user found with this email');
         const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) throw new Error('Invalid password');
-        return { id: user._id.toString(), name: user.name, email: user.email };
+        return { id: user._id.toString(), name: user.name, email: user.email, role: user.role };
       },
     }),
   ],
   session: { strategy: 'jwt' },
   callbacks: {
     async signIn({ user, account }) {
-      if (account.provider === 'google') {
-        await dbConnect();
-        const existing = await User.findOne({ email: user.email });
-        if (!existing) {
-          const randomPass = await bcrypt.hash(Math.random().toString(36), 10);
-          await User.create({
-            name: user.name,
-            email: user.email,
-            password: randomPass,
-          });
+      try {
+        if (account.provider === 'google') {
+          await dbConnect();
+          const existing = await User.findOne({ email: user.email });
+          if (!existing) {
+            const randomPass = await bcrypt.hash(Math.random().toString(36), 10);
+            await User.create({
+              name: user.name || 'Google User',
+              email: user.email,
+              password: randomPass,
+              role: 'member',
+            });
+          }
         }
+        return true;
+      } catch (error) {
+        console.error('SIGNIN ERROR:', error);
+        return false;
       }
-      return true;
     },
     async jwt({ token, user, account }) {
-      if (user) {
-        if (account?.provider === 'google') {
+      try {
+        if (user) {
+          if (account?.provider === 'google') {
+            await dbConnect();
+            const dbUser = await User.findOne({ email: user.email });
+            if (dbUser) {
+              token.id = dbUser._id.toString();
+              token.role = dbUser.role || 'member';
+            }
+          } else {
+            token.id = user.id;
+            token.role = user.role || 'member';
+          }
+        } else if (!token.role && token.id) {
           await dbConnect();
-          const dbUser = await User.findOne({ email: user.email });
-          if (dbUser) token.id = dbUser._id.toString();
-        } else {
-          token.id = user.id;
+          const dbUser = await User.findById(token.id);
+          if (dbUser) {
+            token.role = dbUser.role || 'member';
+          }
         }
+        return token;
+      } catch (error) {
+        console.error('JWT ERROR:', error);
+        return token;
       }
-      return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.role = token.role || 'member';
+      }
       return session;
     },
   },
   pages: { signIn: '/auth' },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

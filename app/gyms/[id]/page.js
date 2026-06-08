@@ -23,6 +23,11 @@ export default function GymDetail({ params }) {
   const [reviews, setReviews] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
 
+  // Inline Review Form State
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
   useEffect(() => {
     fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
@@ -48,12 +53,22 @@ export default function GymDetail({ params }) {
   const today = new Date();
   const dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today); d.setDate(d.getDate() + i);
-    return d.toISOString().split('T')[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
 
   function formatDate(str) {
     const d = new Date(str + 'T00:00:00');
     return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getDateDetails(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const dateNum = d.toLocaleDateString('en-US', { day: '2-digit' });
+    return { dayName, dateNum };
   }
 
   async function handleBook() {
@@ -108,6 +123,27 @@ export default function GymDetail({ params }) {
       else addToast('Removed from favorites', 'info');
     } else {
       setIsFavorite(prev);
+    }
+  }
+
+  async function handleReviewSubmit() {
+    if (!session) { addToast('Please sign in to leave a review', 'error'); return; }
+    if (!newReviewComment.trim()) { addToast('Please write a comment', 'error'); return; }
+    setIsSubmittingReview(true);
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: session.user.id, gymId: id, rating: newReviewRating, comment: newReviewComment })
+    });
+    setIsSubmittingReview(false);
+    if (res.ok) {
+      addToast('Review submitted successfully!', 'success');
+      setNewReviewComment('');
+      setNewReviewRating(5);
+      // Refresh reviews
+      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+    } else {
+      addToast('Failed to submit review', 'error');
     }
   }
 
@@ -179,6 +215,30 @@ export default function GymDetail({ params }) {
             {/* REVIEWS SECTION */}
             <div className="detail-card detail-section">
               <h3>User Reviews ({reviews.length})</h3>
+              
+              {/* Inline Write Review Form */}
+              <div style={{ background: 'var(--surface-alt)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid var(--line)' }}>
+                <h4 style={{ marginBottom: 12 }}>Write a Review</h4>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button key={star} onClick={() => setNewReviewRating(star)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <Star size={24} fill={newReviewRating >= star ? 'var(--amber)' : 'none'} color="var(--amber)" />
+                    </button>
+                  ))}
+                </div>
+                <textarea 
+                  className="auth-input" 
+                  rows="3" 
+                  placeholder="Share your experience at this gym..." 
+                  value={newReviewComment} 
+                  onChange={e => setNewReviewComment(e.target.value)} 
+                  style={{ width: '100%', marginBottom: 12 }}
+                />
+                <button className="btn-primary" onClick={handleReviewSubmit} disabled={isSubmittingReview} style={{ width: '100%' }}>
+                  {isSubmittingReview ? 'Submitting...' : 'Post Review'}
+                </button>
+              </div>
+
               {reviews.length === 0 ? (
                 <p style={{color:'var(--muted)'}}>No reviews yet. Be the first to review after your session!</p>
               ) : (
@@ -210,11 +270,37 @@ export default function GymDetail({ params }) {
               </div>
 
               <div className="booking-field">
-                <label>Select date</label>
-                <select className="date-input" value={selectedDate} onChange={e => { setSelectedDate(e.target.value); setSelectedSlot(''); }} style={{width:'100%',appearance:'auto'}}>
-                  <option value="">Choose a date</option>
-                  {dates.map(d => <option key={d} value={d}>{formatDate(d)}</option>)}
-                </select>
+                <label style={{ marginBottom: '8px', display: 'block' }}>Select date</label>
+                <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0 12px 0', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }} className="date-cards-wrap">
+                  {dates.map(d => {
+                    const { dayName, dateNum } = getDateDetails(d);
+                    const isActive = selectedDate === d;
+                    return (
+                      <button
+                        key={d}
+                        onClick={() => { setSelectedDate(d); setSelectedSlot(''); }}
+                        style={{
+                          flex: '0 0 72px',
+                          padding: '12px 8px',
+                          borderRadius: '16px',
+                          border: isActive ? '2px solid var(--red)' : '1px solid var(--card-border)',
+                          background: isActive ? 'rgba(255, 76, 76, 0.1)' : 'var(--surface-alt)',
+                          color: isActive ? 'var(--red)' : 'var(--text)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: isActive ? 1 : 0.6, textTransform: 'uppercase' }}>{dayName}</span>
+                        <span style={{ fontSize: '1.15rem', fontWeight: 800 }}>{dateNum}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="booking-field">
@@ -236,11 +322,11 @@ export default function GymDetail({ params }) {
 
               {session ? (
                 <>
-                  <button className="btn-book" onClick={handleBook}>Pay ₹{gym.pricePerHour} from Wallet</button>
+                  <button className="btn-book" onClick={handleBook} style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)' }}>Pay ₹{gym.pricePerHour} from Wallet</button>
                   <div className="secure-note" style={{marginTop:12}}>Wallet Balance: <strong>₹{walletBalance}</strong></div>
                 </>
               ) : (
-                <button className="btn-book" onClick={() => router.push('/auth')}>Sign in to book</button>
+                <button className="btn-book" onClick={() => router.push('/auth')} style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)' }}>Sign in to book</button>
               )}
             </div>
           </div>

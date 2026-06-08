@@ -3,27 +3,20 @@ import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ToastProvider } from '@/components/Toast';
-import { Inter, Outfit } from 'next/font/google';
+import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
+const inter = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-body' });
+const outfit = Outfit({ subsets: ['latin'], weight: ['600', '700', '800', '900'], variable: '--font-head' });
 
 export const metadata = {
   title: "GYM-ON-GO — Flexible Gym Sessions Near You",
-  description: "Find nearby gyms, compare crowd levels, and book hourly workout sessions without a membership.",
+  description: "Find nearby gyms, compare prices, and book hourly workout sessions without a membership.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}",
-          }}
-        />
-      </head>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+      <head />
       <body className={`${inter.variable} ${outfit.variable}`}>
         <Providers>
           <ToastProvider>
