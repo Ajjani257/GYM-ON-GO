@@ -23,12 +23,13 @@ const UserSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Generate referral code before saving if not already set
 UserSchema.pre('save', function(next) {
   if (!this.referralCode) {
     const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
     this.referralCode = `GYMGO-${rand}`;
   }
-  next();
+  if (typeof next === 'function') next();
 });
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

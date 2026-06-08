@@ -26,10 +26,17 @@ export default function GymsPage() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetch(`/api/user/favorites?userId=${session.user.id}`)
-        .then(r => r.json())
+      fetch(`/api/user/favorites?userId=${session.user.id}`, { cache: 'no-store' })
+        .then(r => {
+          if (!r.ok) throw new Error(`API error: ${r.status}`);
+          return r.json();
+        })
         .then(data => {
           if (Array.isArray(data)) setFavorites(data.map(g => g._id || g));
+        })
+        .catch(err => {
+          console.error('Failed to load favorites:', err);
+          setFavorites([]);
         });
     }
   }, [session]);
@@ -65,18 +72,36 @@ export default function GymsPage() {
   async function toggleFavorite(e, gymId) {
     e.preventDefault();
     if (!session) { addToast('Please sign in to save favorites', 'error'); return; }
+    
     const isFav = favorites.includes(gymId);
+    const previousFavorites = favorites;
+    
+    // Optimistic update
     if (isFav) setFavorites(prev => prev.filter(id => id !== gymId));
     else setFavorites(prev => [...prev, gymId]);
-    const res = await fetch('/api/user/favorites', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: session.user.id, gymId })
-    });
-    if (res.ok) {
+    
+    try {
+      const res = await fetch('/api/user/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gymId })
+      });
+      
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+      
       const data = await res.json();
-      if (data.isFavorite) addToast('Added to favorites', 'success');
-      else addToast('Removed from favorites', 'info');
+      if (data.isFavorite) {
+        addToast('Added to favorites', 'success');
+      } else {
+        addToast('Removed from favorites', 'info');
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      // Revert optimistic update on error
+      setFavorites(previousFavorites);
+      addToast('Failed to save favorite. Please try again.', 'error');
     }
   }
 

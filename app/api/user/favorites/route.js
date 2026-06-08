@@ -36,7 +36,11 @@ export async function POST(request) {
     const user = await User.findById(session.user.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    // Convert gymId to ObjectId for proper comparison
+    // Validate and convert gymId to ObjectId for proper comparison
+    if (!mongoose.Types.ObjectId.isValid(gymId)) {
+      return NextResponse.json({ error: 'Invalid gym ID' }, { status: 400 });
+    }
+
     const gymObjectId = new mongoose.Types.ObjectId(gymId);
     const isFav = user.favoriteGyms.some(id => id.toString() === gymObjectId.toString());
     
@@ -49,6 +53,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, isFavorite: !isFav });
   } catch (error) {
+    console.error('Favorites API error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

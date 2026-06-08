@@ -90,16 +90,19 @@ function DashboardContent() {
 
   const loadData = () => {
     if (session?.user?.id) {
-      fetch(`/api/bookings?userId=${session.user.id}`, { cache: 'no-store' }).then(r => r.json()).then(setBookings);
-      fetch(`/api/user/favorites?userId=${session.user.id}`, { cache: 'no-store' }).then(r => r.json()).then(setSavedGyms);
+      fetch(`/api/bookings?userId=${session.user.id}`, { cache: 'no-store' }).then(r => r.json()).then(setBookings).catch(err => { console.error('Failed to load bookings:', err); setBookings([]); });
+      fetch(`/api/user/favorites?userId=${session.user.id}`, { cache: 'no-store' }).then(r => {
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      }).then(setSavedGyms).catch(err => { console.error('Failed to load favorites:', err); setSavedGyms([]); });
       fetch(`/api/user/wallet?userId=${session.user.id}`, { cache: 'no-store' }).then(r => r.json()).then(d => {
         setWalletBalance(d.walletBalance || 0);
         setReferralCode(d.referralCode || '');
         setReferralsCount(d.referralsCount || 0);
         setLoyaltyPoints(d.loyaltyPoints || 0);
         setLifetimePoints(d.lifetimePoints || 0);
-      });
-      fetch(`/api/user/transactions`, { cache: 'no-store' }).then(r => r.json()).then(setTransactions).catch(() => {});
+      }).catch(err => console.error('Failed to load wallet:', err));
+      fetch(`/api/user/transactions`, { cache: 'no-store' }).then(r => r.json()).then(setTransactions).catch(err => { console.error('Failed to load transactions:', err); setTransactions([]); });
     }
   };
 

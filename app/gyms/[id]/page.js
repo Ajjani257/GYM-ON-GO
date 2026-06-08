@@ -37,9 +37,16 @@ export default function GymDetail({ params }) {
     if (session?.user?.id) {
       // Fetch favorites
       fetch(`/api/user/favorites?userId=${session.user.id}`, { cache: 'no-store' })
-        .then(r => r.json())
+        .then(r => {
+          if (!r.ok) throw new Error(`API error: ${r.status}`);
+          return r.json();
+        })
         .then(data => {
           if (Array.isArray(data)) setIsFavorite(data.some(g => g._id === id || g === id));
+        })
+        .catch(err => {
+          console.error('Failed to load favorite status:', err);
+          setIsFavorite(false);
         });
       // Fetch wallet balance
       fetch(`/api/user/wallet?userId=${session.user.id}`, { cache: 'no-store' })
@@ -110,19 +117,31 @@ export default function GymDetail({ params }) {
 
   async function toggleFavorite() {
     if (!session) { addToast('Please sign in to save favorites', 'error'); return; }
+    
     const prev = isFavorite;
     setIsFavorite(!prev);
-    const res = await fetch('/api/user/favorites', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: session.user.id, gymId: id })
-    });
-    if (res.ok) {
+    
+    try {
+      const res = await fetch('/api/user/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gymId: id })
+      });
+      
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+      
       const data = await res.json();
-      if (data.isFavorite) addToast('Added to favorites', 'success');
-      else addToast('Removed from favorites', 'info');
-    } else {
+      if (data.isFavorite) {
+        addToast('Added to favorites', 'success');
+      } else {
+        addToast('Removed from favorites', 'info');
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
       setIsFavorite(prev);
+      addToast('Failed to save favorite. Please try again.', 'error');
     }
   }
 
