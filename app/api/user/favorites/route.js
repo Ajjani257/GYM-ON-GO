@@ -4,6 +4,7 @@ import Gym from '@/models/Gym'; // needed for population
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
+import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,11 +36,14 @@ export async function POST(request) {
     const user = await User.findById(session.user.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const isFav = user.favoriteGyms.includes(gymId);
+    // Convert gymId to ObjectId for proper comparison
+    const gymObjectId = new mongoose.Types.ObjectId(gymId);
+    const isFav = user.favoriteGyms.some(id => id.toString() === gymObjectId.toString());
+    
     if (isFav) {
-      user.favoriteGyms = user.favoriteGyms.filter(id => id.toString() !== gymId);
+      user.favoriteGyms = user.favoriteGyms.filter(id => id.toString() !== gymObjectId.toString());
     } else {
-      user.favoriteGyms.push(gymId);
+      user.favoriteGyms.push(gymObjectId);
     }
     await user.save();
 
