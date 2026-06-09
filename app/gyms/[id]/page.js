@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Star, MapPin, Clock, Phone, Mail, Check, CheckCircle, QrCode, Heart, Map } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Clock, Phone, Mail, Check, CheckCircle, QrCode, Heart, Map, Wallet } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 
 export default function GymDetail({ params }) {
@@ -18,6 +18,10 @@ export default function GymDetail({ params }) {
   const [showModal, setShowModal] = useState(false);
   const [booking, setBooking] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState('');
+  const [topUpLoading, setTopUpLoading] = useState(false);
+  const topUpRef = useRef(null);
   
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -82,8 +86,17 @@ export default function GymDetail({ params }) {
     setErrorMsg('');
     if (!session) { router.push('/auth'); return; }
     if (!selectedDate || !selectedSlot) { setErrorMsg('Please select a date and time slot.'); return; }
-    if (walletBalance < gym.pricePerHour) { setErrorMsg('Insufficient wallet balance. Please add funds in your Dashboard.'); return; }
+    if (walletBalance < gym.pricePerHour) {
+      setShowTopUp(true);
+      // Pre-fill the exact shortfall
+      setTopUpAmount(String(gym.pricePerHour - walletBalance));
+      setTimeout(() => topUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      return;
+    }
+    await confirmBook();
+  }
 
+  async function confirmBook() {
     const res = await fetch('/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -98,10 +111,38 @@ export default function GymDetail({ params }) {
       setBooking(b);
       setWalletBalance(prev => prev - gym.pricePerHour);
       setShowModal(true);
+      setShowTopUp(false);
       addToast('Booking confirmed! Show your QR at the gym.', 'success');
     } else {
       const err = await res.json();
       setErrorMsg(err.error || 'Booking failed');
+    }
+  }
+
+  async function handleTopUp() {
+    const amt = Number(topUpAmount);
+    if (!amt || amt < 1) { addToast('Enter a valid amount', 'error'); return; }
+    if (amt > 10000) { addToast('Maximum top-up is ₹10,000', 'error'); return; }
+    setTopUpLoading(true);
+    const res = await fetch('/api/user/wallet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amt }),
+    });
+    setTopUpLoading(false);
+    if (res.ok) {
+      const data = await res.json();
+      setWalletBalance(data.walletBalance);
+      addToast(`₹${amt} added to wallet!`, 'success');
+      setShowTopUp(false);
+      setTopUpAmount('');
+      // Auto-proceed to book if balance is now sufficient
+      if (data.walletBalance >= gym.pricePerHour && selectedDate && selectedSlot) {
+        await confirmBook();
+      }
+    } else {
+      const err = await res.json();
+      addToast(err.error || 'Top-up failed', 'error');
     }
   }
 
@@ -341,8 +382,76 @@ export default function GymDetail({ params }) {
 
               {session ? (
                 <>
-                  <button className="btn-book" onClick={handleBook} style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)' }}>Pay ₹{gym.pricePerHour} from Wallet</button>
-                  <div className="secure-note" style={{marginTop:12}}>Wallet Balance: <strong>₹{walletBalance}</strong></div>
+                  {/* Wallet balance row — same visual treatment as slot-btn row */}
+                  <div className="booking-field" style={{ marginBottom: 0 }}>
+                    <label>Wallet</label>
+                    <div className="wallet-row">
+                      <div className="wallet-balance-info">
+                        <Wallet size={15} />
+                        <span className={walletBalance >= gym.pricePerHour ? 'wallet-ok' : 'wallet-low'}>
+                          ₹{walletBalance}
+                        </span>
+                        {walletBalance < gym.pricePerHour && (
+                          <span className="wallet-shortfall">₹{gym.pricePerHour - walletBalance} short</span>
+                        )}
+                      </div>
+                      <button
+                        className="wallet-topup-toggle"
+                        onClick={() => { setShowTopUp(v => !v); setTopUpAmount(''); setErrorMsg(''); }}
+                      >
+                        {showTopUp ? 'Cancel' : '+ Add money'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Top-up panel — styled like the slots section */}
+                  {showTopUp && (
+                    <div ref={topUpRef} className="booking-field topup-panel">
+                      <label>Add to wallet</label>
+                      <div className="slots-wrap" style={{ marginBottom: 12 }}>
+                        {[
+                          walletBalance < gym.pricePerHour && { label: `₹${gym.pricePerHour - walletBalance} (exact shortfall)`, val: gym.pricePerHour - walletBalance },
+                          { label: '+ ₹100', val: 100 },
+                          { label: '+ ₹200', val: 200 },
+                          { label: '+ ₹500', val: 500 },
+                        ].filter(Boolean).map(chip => (
+                          <button
+                            key={chip.val}
+                            className={`slot-btn ${topUpAmount === String(chip.val) ? 'active' : ''}`}
+                            onClick={() => setTopUpAmount(String(chip.val))}
+                          >{chip.label}</button>
+                        ))}
+                      </div>
+                      <div className="topup-input-row">
+                        <input
+                          type="number"
+                          className="date-input"
+                          placeholder="Or enter custom amount"
+                          value={topUpAmount}
+                          onChange={e => setTopUpAmount(e.target.value)}
+                          min="1"
+                          style={{ flex: 1, cursor: 'text' }}
+                        />
+                        <button
+                          className="btn-book topup-confirm-btn"
+                          onClick={handleTopUp}
+                          disabled={topUpLoading}
+                        >
+                          {topUpLoading ? 'Adding…' : 'Add'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    className="btn-book"
+                    onClick={handleBook}
+                    style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)', marginTop: 16 }}
+                  >
+                    {walletBalance >= gym.pricePerHour
+                      ? `Pay ₹${gym.pricePerHour} from Wallet`
+                      : 'Add Money & Book'}
+                  </button>
                 </>
               ) : (
                 <button className="btn-book" onClick={() => router.push('/auth')} style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)' }}>Sign in to book</button>
