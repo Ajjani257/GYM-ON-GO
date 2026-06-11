@@ -49,7 +49,7 @@ export default function GymsPage() {
     if (maxPrice < 400) params.set('maxPrice', maxPrice);
     if (equipment.length > 0) params.set('equipment', equipment.join(','));
 
-    const res = await fetch(`/api/gyms?${params}`);
+    const res = await fetch(`/api/gyms?${params}`, { cache: 'no-store' });
     const data = await res.json();
     setGyms(data);
     setLoading(false);
@@ -60,7 +60,16 @@ export default function GymsPage() {
   const sortedGyms = useMemo(() => {
     const sorted = [...gyms];
     switch (sort) {
-      case 'rating': sorted.sort((a, b) => b.rating - a.rating); break;
+      case 'rating': 
+        sorted.sort((a, b) => {
+          const pA = a.priority || 0;
+          const pB = b.priority || 0;
+          if (pA > 0 && pB > 0) return pA - pB;
+          if (pA > 0) return -1;
+          if (pB > 0) return 1;
+          return b.rating - a.rating;
+        }); 
+        break;
       case 'price-asc': sorted.sort((a, b) => a.pricePerHour - b.pricePerHour); break;
       case 'price-desc': sorted.sort((a, b) => b.pricePerHour - a.pricePerHour); break;
       case 'reviews': sorted.sort((a, b) => b.reviewCount - a.reviewCount); break;

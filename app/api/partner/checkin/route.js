@@ -29,7 +29,7 @@ export async function POST(request) {
     }
 
     // Find the booking
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate('userId', 'name email');
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }

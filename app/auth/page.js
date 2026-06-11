@@ -1,12 +1,13 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, User, CheckCircle, XCircle, Loader2, Gift } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { Suspense } from 'react';
 
 function AuthContent() {
+  const { data: session, status } = useSession();
   const [tab, setTab] = useState('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,6 +20,19 @@ function AuthContent() {
   const searchParams = useSearchParams();
   const { addToast } = useToast();
   const debounceRef = useRef(null);
+
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      if (session.user.role === 'admin') {
+        router.push('/admin');
+      } else if (session.user.role === 'partner') {
+        router.push('/partner');
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  }, [session, status]);
 
   // Auto-fill referral code from ?ref= query param
   useEffect(() => {
@@ -55,11 +69,23 @@ function AuthContent() {
     e.preventDefault();
     setError(''); setLoading(true);
     const res = await signIn('credentials', { email, password, redirect: false });
-    setLoading(false);
-    if (res?.error) setError(res.error);
-    else {
+    if (res?.error) {
+      setError(res.error);
+      setLoading(false);
+    } else {
       addToast('Signed in successfully!', 'success');
-      router.push('/dashboard');
+      // Fetch fresh session to get the user's role and redirect immediately
+      const sessionRes = await fetch('/api/auth/session');
+      const freshSession = await sessionRes.json();
+      setLoading(false);
+      
+      if (freshSession?.user?.role === 'admin') {
+        router.push('/admin');
+      } else if (freshSession?.user?.role === 'partner') {
+        router.push('/partner');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }
 
@@ -75,15 +101,28 @@ function AuthContent() {
     const data = await res.json();
     if (!res.ok) { setError(data.error); setLoading(false); return; }
     const signin = await signIn('credentials', { email, password, redirect: false });
-    setLoading(false);
-    if (signin?.error) setError(signin.error);
-    else {
+    if (signin?.error) {
+      setError(signin.error);
+      setLoading(false);
+    } else {
       if (data.welcomeCredit) {
         addToast(`🎉 Account created! ₹${data.welcomeCredit} welcome credit added to your wallet.`, 'success');
       } else {
         addToast('Account created successfully!', 'success');
       }
-      router.push('/dashboard');
+      
+      // Fetch fresh session and redirect
+      const sessionRes = await fetch('/api/auth/session');
+      const freshSession = await sessionRes.json();
+      setLoading(false);
+      
+      if (freshSession?.user?.role === 'admin') {
+        router.push('/admin');
+      } else if (freshSession?.user?.role === 'partner') {
+        router.push('/partner');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }
 

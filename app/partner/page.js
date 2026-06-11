@@ -186,8 +186,11 @@ export default function PartnerOverview() {
             {bookings.slice(0, 5).map(b => (
               <div key={b._id} className="booking-item" style={{ margin: 0, padding: '18px 24px' }}>
                 <div className="booking-item-info">
-                  <h4 style={{ fontSize: '1.1rem' }}>User Booking ID: {b._id.slice(-8).toUpperCase()}</h4>
-                  <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '0.9rem' }}>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{b.userId?.name || 'Walk-in Member'}</h4>
+                  <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '0.85rem' }}>
+                    Email: <span style={{ color: 'var(--text)' }}>{b.userId?.email || 'N/A'}</span> • Ref: <span style={{ fontFamily: 'monospace' }}>{b._id.slice(-8).toUpperCase()}</span>
+                  </p>
+                  <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '0.85rem' }}>
                     Slot: <strong>{new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} • {b.timeSlot}</strong>
                   </p>
                 </div>

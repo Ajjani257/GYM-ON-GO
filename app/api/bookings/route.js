@@ -32,7 +32,7 @@ export async function GET(request) {
 
     if (status) filter.status = status;
 
-    const bookings = await Booking.find(filter).sort({ date: -1 });
+    const bookings = await Booking.find(filter).populate('userId', 'name email').sort({ date: -1 });
 
     // Auto-transition past bookings to 'completed'
     const now = new Date();

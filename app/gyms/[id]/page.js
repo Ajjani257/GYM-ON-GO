@@ -212,7 +212,7 @@ export default function GymDetail({ params }) {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gym.name + ', ' + gym.address + ', ' + gym.city)}`;
 
   return (
-    <>
+    <div className="container" style={{ marginTop: '108px' }}>
       <div className="detail-hero" style={{position:'relative'}}>
         <img src={gym.image || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1400&q=80'} alt={gym.name} />
         <div className="detail-hero-overlay"></div>
@@ -232,8 +232,7 @@ export default function GymDetail({ params }) {
         </button>
       </div>
 
-      <div className="container">
-        <div className="detail-layout">
+      <div className="detail-layout">
           <div>
             <div className="detail-card">
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
@@ -459,7 +458,6 @@ export default function GymDetail({ params }) {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Booking Success Modal */}
       {showModal && (
@@ -488,6 +486,6 @@ export default function GymDetail({ params }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -22,6 +22,7 @@ const GymSchema = new mongoose.Schema({
     time: String,
     capacity: { type: Number, default: 20 },
   }],
+  priority: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const Gym = mongoose.models.Gym || mongoose.model('Gym', GymSchema);
@@ -101,7 +102,7 @@ const realGyms = [
     crowdLevel: 'high',
     hours: '06:00 - 22:00',
     phone: '022 4004 5555',
-    image: 'https://images.unsplash.com/photo-1593079831268-3381b0c42385?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&q=80',
     amenities: ['AC', 'Parking', 'Showers', 'Lockers'],
     equipment: ['Treadmill', 'Elliptical', 'Smith Machine', 'Dumbbells', 'Bench Press'],
   },
@@ -133,7 +134,7 @@ const realGyms = [
     crowdLevel: 'high',
     hours: '06:00 - 22:00',
     phone: '080 4444 3333',
-    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=80',
     amenities: ['AC', 'Showers', 'Lockers', 'Smart Check-in'],
     equipment: ['Dumbbells', 'Kettlebells', 'Boxing Bags', 'TRX', 'Rowing Machine'],
   },

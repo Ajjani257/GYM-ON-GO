@@ -19,6 +19,7 @@ const GymSchema = new mongoose.Schema({
     time: String,
     capacity: { type: Number, default: 20 },
   }],
+  priority: { type: Number, default: 0 },
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   pricingRules: [{
     dayOfWeek: [Number],
