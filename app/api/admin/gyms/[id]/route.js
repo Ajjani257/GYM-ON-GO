@@ -19,17 +19,27 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Valid priority value is required' }, { status: 400 });
     }
 
-    const gym = await Gym.findByIdAndUpdate(
-      id,
-      { priority: Number(priority) },
-      { new: true }
-    );
-
-    if (!gym) {
+    const targetGym = await Gym.findById(id);
+    if (!targetGym) {
       return NextResponse.json({ error: 'Gym not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Priority updated successfully', gym });
+    const oldPriority = targetGym.priority || 0;
+    const newPriority = Number(priority);
+
+    // If new priority is greater than 0, exchange with the gym that currently has it
+    if (newPriority > 0 && newPriority !== oldPriority) {
+      const swapGym = await Gym.findOne({ priority: newPriority, _id: { $ne: id } });
+      if (swapGym) {
+        swapGym.priority = oldPriority;
+        await swapGym.save();
+      }
+    }
+
+    targetGym.priority = newPriority;
+    await targetGym.save();
+
+    return NextResponse.json({ message: 'Priority updated successfully', gym: targetGym });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
