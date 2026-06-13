@@ -108,12 +108,12 @@ export async function POST(request) {
     // Award loyalty points: +10 per booking
     const POINTS_PER_BOOKING = 10;
     const POINTS_THRESHOLD = 100;
-    const REWARD_AMOUNT = 50;
+    const REWARD_AMOUNT = 100;
 
     user.loyaltyPoints = (user.loyaltyPoints || 0) + POINTS_PER_BOOKING;
     user.lifetimePoints = (user.lifetimePoints || 0) + POINTS_PER_BOOKING;
 
-    // Auto-redeem every 100 points into ₹50 wallet credit
+    // Auto-redeem every 100 points into ₹100 wallet credit
     const redeemable = Math.floor(user.loyaltyPoints / POINTS_THRESHOLD);
     if (redeemable > 0) {
       const rewardCredit = redeemable * REWARD_AMOUNT;

@@ -14,6 +14,7 @@ const PartnerSchema = new mongoose.Schema({
   amenities: [{ type: String }],
   equipment: [{ type: String }],
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  rejectionReason: { type: String, default: '' },
 }, { timestamps: true });
 
 export default mongoose.models.Partner || mongoose.model('Partner', PartnerSchema);

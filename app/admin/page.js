@@ -38,6 +38,8 @@ export default function AdminDashboard() {
   // Onboard Credentials Result state
   const [onboardResult, setOnboardResult] = useState(null);
   const [expandedApp, setExpandedApp] = useState(null);
+  const [rejectingApp, setRejectingApp] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   // Load Admin Data
   async function loadAdminData() {
@@ -90,17 +92,23 @@ export default function AdminDashboard() {
   }
 
   // Handle Application Actions
-  async function handleReject(id) {
-    if (!window.confirm('Are you sure you want to reject this gym application?')) return;
+  async function handleRejectSubmit(e) {
+    e.preventDefault();
+    if (!rejectionReason.trim()) {
+      addToast('Please write a rejection reason.', 'error');
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch('/api/admin/partners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action: 'reject' })
+        body: JSON.stringify({ id: rejectingApp._id, action: 'reject', reason: rejectionReason })
       });
       if (res.ok) {
         addToast('Application rejected successfully.', 'success');
+        setRejectingApp(null);
+        setRejectionReason('');
         loadAdminData();
       } else {
         const err = await res.json();
@@ -204,7 +212,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* MAIN ADMIN GRID: APPLICATIONS LEFT, EMAIL LOGS RIGHT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}>
+      <div className="admin-layout">
         
         {/* LEFT COLUMN: APPLICATIONS LIST & LIVE GYMS */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -248,6 +256,21 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {filteredApps.map((app) => {
                 const badgeColor = app.status === 'approved' ? 'status-completed' : (app.status === 'rejected' ? 'status-cancelled' : 'status-upcoming');
+                
+                // 1. Check if email/phone is already registered with another approved gym
+                const isSecondRequest = applications.some(other => 
+                  other._id !== app._id && 
+                  other.status === 'approved' && 
+                  (other.email === app.email || other.phone === app.phone)
+                );
+
+                // 2. Check if there was a previous rejected application for this email/phone
+                const previousRejectedApp = applications.find(other => 
+                  other._id !== app._id && 
+                  other.status === 'rejected' && 
+                  (other.email === app.email || other.phone === app.phone)
+                );
+
                 return (
                   <div key={app._id} className="booking-item" style={{ margin: 0, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
@@ -260,6 +283,34 @@ export default function AdminDashboard() {
                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
                           Contact: <strong>{app.phone}</strong> • City: <strong>{app.city}</strong>
                         </p>
+
+                        {/* Duplicate / Second Request Alert */}
+                        {isSecondRequest && (
+                          <div style={{ marginTop: '4px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '8px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--amber)', fontSize: '0.8rem', fontWeight: 600 }}>
+                            <AlertCircle size={13} /> Second Request: Email/Phone already registered with an active gym.
+                          </div>
+                        )}
+
+                        {/* Re-registration / Previous Rejection Alert */}
+                        {app.status === 'pending' && previousRejectedApp && (
+                          <div style={{ marginTop: '4px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', padding: '6px 12px', display: 'flex', flexDirection: 'column', gap: '2px', color: 'var(--red)', fontSize: '0.8rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                              <AlertCircle size={13} /> Re-registration Request (Previously Rejected)
+                            </div>
+                            {previousRejectedApp.rejectionReason && (
+                              <div style={{ opacity: 0.85, fontSize: '0.75rem', marginLeft: '21px' }}>
+                                Previous Rejection Reason: <strong>{previousRejectedApp.rejectionReason}</strong>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Display rejection reason for this specific rejected application */}
+                        {app.status === 'rejected' && app.rejectionReason && (
+                          <div style={{ marginTop: '4px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', padding: '6px 12px', color: 'var(--red)', fontSize: '0.8rem' }}>
+                            Rejection Reason: <strong>{app.rejectionReason}</strong>
+                          </div>
+                        )}
                       </div>
 
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -290,7 +341,10 @@ export default function AdminDashboard() {
                             </button>
                             <button 
                               className="btn-outline" 
-                              onClick={() => handleReject(app._id)}
+                              onClick={() => {
+                                setRejectingApp(app);
+                                setRejectionReason('');
+                              }}
                               style={{ padding: '8px 16px', fontSize: '0.85rem', height: '36px', borderRadius: '8px', color: 'var(--red)', borderColor: 'rgba(255, 62, 0, 0.2)' }}
                             >
                               Reject
@@ -303,9 +357,26 @@ export default function AdminDashboard() {
                           </span>
                         )}
                         {app.status === 'rejected' && (
-                          <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <XCircle size={14} color="var(--red)" /> Application Closed
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <XCircle size={14} color="var(--red)" /> Rejected
+                            </span>
+                            <button 
+                              className="btn-primary" 
+                              onClick={() => {
+                                setOnboardApp(app);
+                                setAddress(app.address || `${app.city}, India`);
+                                setHours(app.operatingHours || '06:00 - 22:00');
+                                setPriority(0);
+                                setAmenities(app.amenities && app.amenities.length > 0 ? app.amenities : ['Air Conditioning (AC)', 'Free Parking', 'Locker Rooms & Lockers', 'Showers & Changing Rooms']);
+                                setEquipment(app.equipment && app.equipment.length > 0 ? app.equipment : ['Treadmills (Cardio)', 'Free Weights (Dumbbells & Barbells)', 'Squat Racks & Power Cages', 'Bench Press (Flat, Incline & Decline)']);
+                                setDescription(`Premium verified gym in ${app.city} featuring a clean workout floor, verified amenities, and modern equipment.`);
+                              }}
+                              style={{ padding: '8px 16px', fontSize: '0.85rem', height: '36px', borderRadius: '8px' }}
+                            >
+                              Re-verify & Onboard
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -678,6 +749,60 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── REJECT REASON MODAL ── */}
+      <AnimatePresence>
+        {rejectingApp && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '24px' }}>
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="detail-card" 
+              style={{ maxWidth: '480px', width: '100%', padding: '32px' }}
+            >
+              <div style={{ borderBottom: '1px solid var(--line)', paddingBottom: '16px', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--red)' }}>Reject Gym Application</h3>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '4px' }}>
+                  Please provide a reason for rejecting <strong style={{ color: 'var(--text)' }}>{rejectingApp.gymName}</strong>. This will be sent to the owner.
+                </p>
+              </div>
+              <form onSubmit={handleRejectSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="form-group">
+                  <label>Reason for Rejection</label>
+                  <textarea 
+                    className="auth-input" 
+                    required 
+                    rows="4" 
+                    value={rejectionReason} 
+                    onChange={e => setRejectionReason(e.target.value)} 
+                    placeholder="Enter details on why the application does not meet criteria..." 
+                    style={{ marginTop: '6px', width: '100%', minHeight: '100px', padding: '12px', resize: 'none' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                  <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    style={{ flex: 1, background: 'var(--red)', borderColor: 'var(--red)' }}
+                    disabled={loading}
+                  >
+                    Confirm Rejection
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-outline" 
+                    style={{ flex: 1 }} 
+                    onClick={() => setRejectingApp(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
             </motion.div>
           </div>

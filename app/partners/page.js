@@ -394,13 +394,22 @@ export default function Partners() {
               {step === 3 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 800, borderBottom: '1px solid var(--line)', paddingBottom: '8px', marginBottom: '8px' }}>Step 3: Amenities & Equipment</h3>
+                  <div style={{ background: 'rgba(255, 60, 60, 0.08)', border: '1px solid rgba(255, 60, 60, 0.2)', padding: '12px 16px', borderRadius: '8px', color: 'var(--red)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>⚠️</span>
+                    <span>Kindly select the below items carefully because if the details failed to match during offline verification, your gym may face rejection.</span>
+                  </div>
                   <div className="form-group">
                     <label>Website or Instagram Handle (Optional)</label>
                     <input type="url" maxLength={300} placeholder="https://instagram.com/mygym" value={website} onChange={handleWebsiteChange} />
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginBottom: '24px' }}>
-                    <span style={{ fontSize: '.75rem', letterSpacing: '.08em', color: 'var(--muted)', fontWeight: 800, textTransform: 'uppercase', display: 'block' }}>Amenities Available</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: '.75rem', letterSpacing: '.08em', color: 'var(--muted)', fontWeight: 800, textTransform: 'uppercase' }}>Amenities Available</span>
+                      <button type="button" onClick={() => setSelectedAmenities(selectedAmenities.length === availableAmenities.length ? [] : [...availableAmenities])} style={{ background: 'none', border: 'none', color: 'var(--blue)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                        {selectedAmenities.length === availableAmenities.length ? 'Deselect All' : 'Select All'}
+                      </button>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                       {availableAmenities.map(a => (
                         <label key={a} style={{ 
@@ -427,7 +436,12 @@ export default function Partners() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginBottom: '24px' }}>
-                    <span style={{ fontSize: '.75rem', letterSpacing: '.08em', color: 'var(--muted)', fontWeight: 800, textTransform: 'uppercase', display: 'block' }}>Equipment Available</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: '.75rem', letterSpacing: '.08em', color: 'var(--muted)', fontWeight: 800, textTransform: 'uppercase' }}>Equipment Available</span>
+                      <button type="button" onClick={() => setSelectedEquipment(selectedEquipment.length === availableEquipment.length ? [] : [...availableEquipment])} style={{ background: 'none', border: 'none', color: 'var(--blue)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                        {selectedEquipment.length === availableEquipment.length ? 'Deselect All' : 'Select All'}
+                      </button>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                       {availableEquipment.map(eq => (
                         <label key={eq} style={{ 

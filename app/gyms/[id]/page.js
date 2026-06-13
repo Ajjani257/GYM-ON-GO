@@ -32,10 +32,33 @@ export default function GymDetail({ params }) {
   const [newReviewComment, setNewReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  // Review Eligibility and Management State
+  const [reviewEligibility, setReviewEligibility] = useState({ eligible: false, userReview: null });
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [editReviewRating, setEditReviewRating] = useState(5);
+  const [editReviewComment, setEditReviewComment] = useState('');
+  const [isUpdatingReview, setIsUpdatingReview] = useState(false);
+  const [isDeletingReview, setIsDeletingReview] = useState(false);
+
+  const fetchReviewStatus = () => {
+    if (session?.user?.id) {
+      fetch(`/api/reviews/status?gymId=${id}`, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(setReviewEligibility)
+        .catch(err => console.error('Failed to fetch review status:', err));
+    } else {
+      setReviewEligibility({ eligible: false, userReview: null });
+    }
+  };
+
   useEffect(() => {
     fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
   }, [id]);
+
+  useEffect(() => {
+    fetchReviewStatus();
+  }, [session, id]);
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -136,10 +159,7 @@ export default function GymDetail({ params }) {
       addToast(`₹${amt} added to wallet!`, 'success');
       setShowTopUp(false);
       setTopUpAmount('');
-      // Auto-proceed to book if balance is now sufficient
-      if (data.walletBalance >= gym.pricePerHour && selectedDate && selectedSlot) {
-        await confirmBook();
-      }
+      // Removed auto-booking as per user request
     } else {
       const err = await res.json();
       addToast(err.error || 'Top-up failed', 'error');
@@ -200,10 +220,56 @@ export default function GymDetail({ params }) {
       addToast('Review submitted successfully!', 'success');
       setNewReviewComment('');
       setNewReviewRating(5);
-      // Refresh reviews
+      // Refresh reviews & status & gym rating
       fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetchReviewStatus();
+      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     } else {
-      addToast('Failed to submit review', 'error');
+      const data = await res.json();
+      addToast(data.error || 'Failed to submit review', 'error');
+    }
+  }
+
+  async function handleReviewEditSubmit() {
+    if (!session || !reviewEligibility.userReview) return;
+    if (!editReviewComment.trim()) { addToast('Please write a comment', 'error'); return; }
+    setIsUpdatingReview(true);
+    const res = await fetch('/api/reviews', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewId: reviewEligibility.userReview._id, rating: editReviewRating, comment: editReviewComment })
+    });
+    setIsUpdatingReview(false);
+    if (res.ok) {
+      addToast('Review updated successfully!', 'success');
+      setIsEditingReview(false);
+      // Refresh reviews & status & gym rating
+      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetchReviewStatus();
+      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+    } else {
+      const data = await res.json();
+      addToast(data.error || 'Failed to update review', 'error');
+    }
+  }
+
+  async function handleReviewDelete() {
+    if (!session || !reviewEligibility.userReview) return;
+    if (!confirm('Are you sure you want to delete your review?')) return;
+    setIsDeletingReview(true);
+    const res = await fetch(`/api/reviews?id=${reviewEligibility.userReview._id}`, {
+      method: 'DELETE'
+    });
+    setIsDeletingReview(false);
+    if (res.ok) {
+      addToast('Review deleted successfully!', 'success');
+      // Refresh reviews & status & gym rating
+      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetchReviewStatus();
+      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+    } else {
+      const data = await res.json();
+      addToast(data.error || 'Failed to delete review', 'error');
     }
   }
 
@@ -275,49 +341,153 @@ export default function GymDetail({ params }) {
             <div className="detail-card detail-section">
               <h3>User Reviews ({reviews.length})</h3>
               
-              {/* Inline Write Review Form */}
-              <div style={{ background: 'var(--surface-alt)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid var(--line)' }}>
-                <h4 style={{ marginBottom: 12 }}>Write a Review</h4>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <button key={star} onClick={() => setNewReviewRating(star)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                      <Star size={24} fill={newReviewRating >= star ? 'var(--amber)' : 'none'} color="var(--amber)" />
-                    </button>
-                  ))}
+              {/* Conditional reviews header & form/status */}
+              {!session ? (
+                <div style={{ background: 'var(--surface-alt)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid var(--line)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--muted)', marginBottom: 12 }}>Please sign in to write a review. Anyone can read other members' reviews below!</p>
+                  <button className="btn-primary" onClick={() => router.push('/auth')} style={{ display: 'inline-block', width: 'auto', padding: '10px 24px' }}>
+                    Sign In
+                  </button>
                 </div>
-                <textarea 
-                  className="auth-input" 
-                  rows="3" 
-                  placeholder="Share your experience at this gym..." 
-                  value={newReviewComment} 
-                  onChange={e => setNewReviewComment(e.target.value)} 
-                  style={{ width: '100%', marginBottom: 12 }}
-                />
-                <button className="btn-primary" onClick={handleReviewSubmit} disabled={isSubmittingReview} style={{ width: '100%' }}>
-                  {isSubmittingReview ? 'Submitting...' : 'Post Review'}
-                </button>
-              </div>
-
-              {reviews.length === 0 ? (
-                <p style={{color:'var(--muted)'}}>No reviews yet. Be the first to review after your session!</p>
-              ) : (
-                <div style={{display:'flex',flexDirection:'column',gap:16,marginTop:16}}>
-                  {reviews.map(r => (
-                    <div key={r._id} style={{background:'var(--surface-alt)',padding:16,borderRadius:16}}>
-                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
-                        <strong>{r.userId?.name || 'User'}</strong>
-                        <div style={{color:'var(--gold)',display:'flex',alignItems:'center',gap:4}}>
-                          <Star size={14} fill="currentColor" /> {r.rating}
-                        </div>
+              ) : !reviewEligibility.eligible ? (
+                <div style={{ background: 'rgba(255, 76, 76, 0.05)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid rgba(255, 76, 76, 0.2)' }}>
+                  <p style={{ color: 'var(--red)', margin: 0, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <CheckCircle size={16} style={{ color: 'var(--red)', transform: 'rotate(180deg)' }} /> 
+                    You can write a review after completing a workout at this gym. See what other members say below!
+                  </p>
+                </div>
+              ) : reviewEligibility.userReview ? (
+                // User has already written a review: show "Your Review" card
+                <div style={{ background: 'var(--surface-alt)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid var(--line)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <h4 style={{ margin: 0, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <CheckCircle size={16} style={{ color: '#22c55e' }} /> Your Review
+                    </h4>
+                    {!isEditingReview && (
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <button 
+                          onClick={() => {
+                            setEditReviewRating(reviewEligibility.userReview.rating);
+                            setEditReviewComment(reviewEligibility.userReview.comment);
+                            setIsEditingReview(true);
+                          }}
+                          style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={handleReviewDelete}
+                          disabled={isDeletingReview}
+                          style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                        >
+                          {isDeletingReview ? 'Deleting...' : 'Delete'}
+                        </button>
                       </div>
-                      <p style={{color:'var(--muted)',fontSize:'0.95rem',lineHeight:1.5}}>{r.comment}</p>
-                      <div style={{fontSize:'0.8rem',color:'var(--line)',marginTop:8}}>
-                        {new Date(r.createdAt).toLocaleDateString()}
+                    )}
+                  </div>
+
+                  {isEditingReview ? (
+                    <div>
+                      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <button key={star} onClick={() => setEditReviewRating(star)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <Star size={24} fill={editReviewRating >= star ? 'var(--amber)' : 'none'} color="var(--amber)" />
+                          </button>
+                        ))}
+                      </div>
+                      <textarea 
+                        className="auth-input" 
+                        rows="3" 
+                        placeholder="Edit your experience..." 
+                        value={editReviewComment} 
+                        onChange={e => setEditReviewComment(e.target.value)} 
+                        style={{ width: '100%', marginBottom: 12 }}
+                      />
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <button className="btn-primary" onClick={handleReviewEditSubmit} disabled={isUpdatingReview} style={{ flex: 1 }}>
+                          {isUpdatingReview ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <button className="btn-outline" onClick={() => setIsEditingReview(false)} style={{ flex: 1 }}>
+                          Cancel
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8, color: 'var(--amber)' }}>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} size={16} fill={reviewEligibility.userReview.rating >= star ? 'currentColor' : 'none'} />
+                        ))}
+                      </div>
+                      <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>
+                        {reviewEligibility.userReview.comment}
+                      </p>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--line)', marginTop: 8 }}>
+                        {new Date(reviewEligibility.userReview.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // User is eligible but has not written a review
+                <div style={{ background: 'var(--surface-alt)', padding: 20, borderRadius: 16, marginBottom: 24, border: '1px solid var(--line)' }}>
+                  <h4 style={{ marginBottom: 12 }}>Write a Review</h4>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button key={star} onClick={() => setNewReviewRating(star)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <Star size={24} fill={newReviewRating >= star ? 'var(--amber)' : 'none'} color="var(--amber)" />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea 
+                    className="auth-input" 
+                    rows="3" 
+                    placeholder="Share your experience at this gym..." 
+                    value={newReviewComment} 
+                    onChange={e => setNewReviewComment(e.target.value)} 
+                    style={{ width: '100%', marginBottom: 12 }}
+                  />
+                  <button className="btn-primary" onClick={handleReviewSubmit} disabled={isSubmittingReview} style={{ width: '100%' }}>
+                    {isSubmittingReview ? 'Submitting...' : 'Post Review'}
+                  </button>
                 </div>
               )}
+
+              {/* Other reviews list */}
+              {(() => {
+                const loggedInUserId = session?.user?.id;
+                const otherReviews = reviews.filter(r => {
+                  const rUserId = r.userId?._id || r.userId;
+                  return rUserId !== loggedInUserId;
+                });
+
+                if (otherReviews.length === 0) {
+                  return (
+                    <p style={{ color: 'var(--muted)' }}>
+                      {reviews.length > 0 ? 'No other reviews yet.' : 'No reviews yet. Be the first to review after your session!'}
+                    </p>
+                  );
+                }
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+                    {otherReviews.map(r => (
+                      <div key={r._id} style={{ background: 'var(--surface-alt)', padding: 16, borderRadius: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <strong>{r.userId?.name || 'User'}</strong>
+                          <div style={{ color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Star size={14} fill="currentColor" /> {r.rating}
+                          </div>
+                        </div>
+                        <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.5 }}>{r.comment}</p>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--line)', marginTop: 8 }}>
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
           </div>
@@ -366,15 +536,26 @@ export default function GymDetail({ params }) {
                 <label>Select time slot</label>
                 {!selectedDate ? (
                   <div className="slots-empty">Select a date to see slots</div>
-                ) : gym.slots?.length > 0 ? (
-                  <div className="slots-wrap">
-                    {gym.slots.map((s, i) => (
-                      <button key={i} className={`slot-btn ${selectedSlot === s.time ? 'active' : ''}`} onClick={() => { setSelectedSlot(s.time); setErrorMsg(''); }}>{s.time}</button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="slots-empty">No slots available</div>
-                )}
+                ) : (() => {
+                  const dateObj = new Date(selectedDate + 'T00:00:00');
+                  const dayOfWeek = dateObj.getDay(); // 0 is Sunday, 1 is Monday, etc.
+                  const visibleSlots = (gym.slots || []).filter(s => {
+                    const slotDays = s.days || [0, 1, 2, 3, 4, 5, 6];
+                    return slotDays.includes(dayOfWeek);
+                  });
+
+                  if (visibleSlots.length === 0) {
+                    return <div className="slots-empty">No slots available for this day</div>;
+                  }
+
+                  return (
+                    <div className="slots-wrap">
+                      {visibleSlots.map((s, i) => (
+                        <button key={i} className={`slot-btn ${selectedSlot === s.time ? 'active' : ''}`} onClick={() => { setSelectedSlot(s.time); setErrorMsg(''); }}>{s.time}</button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {errorMsg && <div className="auth-error" style={{marginBottom:16}}>{errorMsg}</div>}
@@ -448,8 +629,8 @@ export default function GymDetail({ params }) {
                     style={{ background: 'linear-gradient(135deg, var(--red) 0%, var(--amber) 100%)', boxShadow: '0 8px 20px rgba(79, 70, 229, 0.4)', marginTop: 16 }}
                   >
                     {walletBalance >= gym.pricePerHour
-                      ? `Pay ₹${gym.pricePerHour} from Wallet`
-                      : 'Add Money & Book'}
+                      ? `Secure My Spot 💪`
+                      : 'Add Money to Wallet'}
                   </button>
                 </>
               ) : (

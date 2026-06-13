@@ -88,7 +88,7 @@ export async function POST(request) {
       // Award +5 bonus loyalty points on first check-in
       const BONUS_POINTS = 5;
       const POINTS_THRESHOLD = 100;
-      const REWARD_AMOUNT = 50;
+      const REWARD_AMOUNT = 100;
       user.loyaltyPoints = (user.loyaltyPoints || 0) + BONUS_POINTS;
       user.lifetimePoints = (user.lifetimePoints || 0) + BONUS_POINTS;
       const redeemable = Math.floor(user.loyaltyPoints / POINTS_THRESHOLD);

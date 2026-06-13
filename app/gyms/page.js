@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
 import { Search, Star, MapPin, Clock, SearchX, Heart, GitCompare, X, ArrowRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdBanner from '@/components/AdBanner';
 
 export default function GymsPage() {
   const { data: session } = useSession();
@@ -17,10 +18,12 @@ export default function GymsPage() {
   const [city, setCity] = useState('');
   const [maxPrice, setMaxPrice] = useState(400);
   const [equipment, setEquipment] = useState([]);
-  const [sort, setSort] = useState('rating');
+  const [sort, setSort] = useState('featured');
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [compareList, setCompareList] = useState([]); // up to 3 gym IDs
+  const [userLocation, setUserLocation] = useState(null); // { lat, lng }
+  const [locationLoading, setLocationLoading] = useState(false);
 
   useEffect(() => { fetchGyms(); }, []);
 
@@ -48,6 +51,10 @@ export default function GymsPage() {
     if (city) params.set('city', city);
     if (maxPrice < 400) params.set('maxPrice', maxPrice);
     if (equipment.length > 0) params.set('equipment', equipment.join(','));
+    if (userLocation) {
+      params.set('userLat', userLocation.lat);
+      params.set('userLng', userLocation.lng);
+    }
 
     const res = await fetch(`/api/gyms?${params}`, { cache: 'no-store' });
     const data = await res.json();
@@ -55,28 +62,77 @@ export default function GymsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { const t = setTimeout(fetchGyms, 300); return () => clearTimeout(t); }, [search, city, maxPrice, equipment]);
+  useEffect(() => { const t = setTimeout(fetchGyms, 300); return () => clearTimeout(t); }, [search, city, maxPrice, equipment, userLocation]);
 
   const sortedGyms = useMemo(() => {
     const sorted = [...gyms];
-    switch (sort) {
-      case 'rating': 
-        sorted.sort((a, b) => {
-          const pA = a.priority || 0;
-          const pB = b.priority || 0;
+    sorted.sort((a, b) => {
+      // If we are sorting by nearby, distance takes absolute precedence
+      if (sort === 'nearby' && a.distanceKm !== undefined && b.distanceKm !== undefined) {
+        return a.distanceKm - b.distanceKm;
+      }
+
+      // Priority only applies when sorting by the default 'featured'
+      if (sort === 'featured') {
+        const pA = a.priority || 0;
+        const pB = b.priority || 0;
+
+        if (pA !== pB) {
           if (pA > 0 && pB > 0) return pA - pB;
           if (pA > 0) return -1;
           if (pB > 0) return 1;
+        }
+      }
+
+      // Fall back to selected sort
+      switch (sort) {
+        case 'featured':
           return b.rating - a.rating;
-        }); 
-        break;
-      case 'price-asc': sorted.sort((a, b) => a.pricePerHour - b.pricePerHour); break;
-      case 'price-desc': sorted.sort((a, b) => b.pricePerHour - a.pricePerHour); break;
-      case 'reviews': sorted.sort((a, b) => b.reviewCount - a.reviewCount); break;
-      default: break;
-    }
+        case 'rating':
+          return b.rating - a.rating;
+        case 'price-asc':
+          return a.pricePerHour - b.pricePerHour;
+        case 'price-desc':
+          return b.pricePerHour - a.pricePerHour;
+        case 'reviews':
+          return b.reviewCount - a.reviewCount;
+        default:
+          return b.rating - a.rating;
+      }
+    });
     return sorted;
   }, [gyms, sort]);
+
+  function requestLocation() {
+    setLocationLoading(true);
+    if (!navigator.geolocation) {
+      addToast('Geolocation is not supported by your browser', 'error');
+      setLocationLoading(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setSort('nearby');
+        setLocationLoading(false);
+        addToast('Location detected!', 'success');
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        let msg = 'Unable to retrieve your location';
+        if (error.code === 1) msg = 'Location access denied by browser.';
+        else if (error.code === 2) msg = 'Position unavailable. Check device settings.';
+        else if (error.code === 3) msg = 'Location request timed out.';
+        addToast(msg, 'error');
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
 
   async function toggleFavorite(e, gymId) {
     e.preventDefault();
@@ -220,8 +276,21 @@ export default function GymsPage() {
           </div>
           <div className="filter-group">
             <label>Sort by</label>
-            <select value={sort} onChange={e => setSort(e.target.value)}>
+            <select 
+              value={sort} 
+              onChange={e => {
+                const newSort = e.target.value;
+                if (newSort === 'nearby') {
+                  if (!userLocation) requestLocation();
+                  else setSort('nearby');
+                } else {
+                  setSort(newSort);
+                }
+              }}
+            >
+              <option value="featured">Featured</option>
               <option value="rating">Highest Rated</option>
+              <option value="nearby">{locationLoading ? 'Detecting Location...' : 'Nearby'}</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="reviews">Most Reviewed</option>
@@ -310,7 +379,11 @@ export default function GymsPage() {
                       </div>
                       <div className="gym-card-body">
                         <div className="gym-card-name">{gym.name}</div>
-                        <div className="gym-card-address"><MapPin size={14} /> {gym.address}</div>
+                        <div className="gym-card-address">
+                          <MapPin size={14} /> 
+                          {gym.distanceKm !== undefined ? <span style={{color: 'var(--amber)', fontWeight: 600, marginRight: 6}}>{gym.distanceKm} km away •</span> : ''}
+                          {gym.address}
+                        </div>
                         <div className="gym-card-meta">
                           <span className="gym-rating"><Star size={14} /> {gym.rating} ({gym.reviewCount})</span>
                           <span className="gym-hours"><Clock size={14} /> {gym.hours}</span>
@@ -320,42 +393,16 @@ export default function GymsPage() {
                           {gym.amenities.length > 3 && <span className="amenity-tag">+{gym.amenities.length - 3}</span>}
                         </div>
 
-                        {/* Compare button — full width in card body */}
+                        {/* Compare button */}
                         <button
                           onClick={(e) => toggleCompare(e, gym)}
-                          style={{
-                            width: '100%',
-                            marginTop: 12,
-                            padding: '9px 14px',
-                            borderRadius: 10,
-                            border: `1.5px solid ${isComparing ? 'var(--blue)' : 'rgba(0,240,255,0.3)'}`,
-                            background: isComparing
-                              ? 'rgba(0,240,255,0.12)'
-                              : 'rgba(0,240,255,0.04)',
-                            color: isComparing ? 'var(--blue)' : 'var(--muted)',
-                            fontWeight: 700,
-                            fontSize: '0.82rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 7,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            letterSpacing: '0.02em',
-                          }}
-                          onMouseEnter={e => {
-                            if (!isComparing) {
-                              e.currentTarget.style.background = 'rgba(0,240,255,0.1)';
-                              e.currentTarget.style.borderColor = 'var(--blue)';
-                              e.currentTarget.style.color = 'var(--blue)';
-                            }
-                          }}
-                          onMouseLeave={e => {
-                            if (!isComparing) {
-                              e.currentTarget.style.background = 'rgba(0,240,255,0.04)';
-                              e.currentTarget.style.borderColor = 'rgba(0,240,255,0.3)';
-                              e.currentTarget.style.color = 'var(--muted)';
-                            }
+                          style={{ 
+                            width: '100%', marginTop: '16px', padding: '10px', fontSize: '0.9rem', borderRadius: 12, 
+                            border: `1px solid ${isComparing ? 'var(--blue)' : 'var(--line)'}`, 
+                            color: isComparing ? 'var(--blue)' : 'var(--text)',
+                            background: isComparing ? 'rgba(0,240,255,0.08)' : 'transparent',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                            cursor: 'pointer', transition: 'all 0.2s'
                           }}
                         >
                           <GitCompare size={14} />
@@ -367,6 +414,12 @@ export default function GymsPage() {
                 </motion.div>
               );
             })}
+            
+            {/* Native In-Feed Ad slot */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <AdBanner dataAdSlot="explore_bottom_ad" />
+            </div>
+            
           </motion.div>
         )}
       </div>

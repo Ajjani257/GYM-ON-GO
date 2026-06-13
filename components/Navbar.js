@@ -18,6 +18,7 @@ function NavLinksList({ session }) {
   const isWishlist = pathname === '/dashboard' && tab === 'saved';
   const isPartners = pathname.startsWith('/partners');
   const isPartnerConsole = pathname.startsWith('/partner');
+  const isAdminConsole = pathname.startsWith('/admin');
   const isBlogs = pathname.startsWith('/blogs');
   const isPlans = pathname.startsWith('/plans');
 
@@ -27,7 +28,9 @@ function NavLinksList({ session }) {
       <Link href="/gyms" className={`nav-link ${isExplore ? 'active' : ''}`}>Explore</Link>
       {session && (
         <>
-          {session.user.role === 'partner' ? (
+          {session.user.role === 'admin' ? (
+            <Link href="/admin" className={`nav-link ${isAdminConsole ? 'active' : ''}`}>Admin Console</Link>
+          ) : session.user.role === 'partner' ? (
             <Link href="/partner" className={`nav-link ${isPartnerConsole ? 'active' : ''}`}>Partner Console</Link>
           ) : (
             <>
@@ -56,6 +59,7 @@ function MobileNavLinksList({ session, setMobileOpen }) {
   const isPartners = pathname.startsWith('/partners');
   const isDashboard = pathname === '/dashboard' && !tab;
   const isPartnerConsole = pathname.startsWith('/partner');
+  const isAdminConsole = pathname.startsWith('/admin');
   const isBlogs = pathname.startsWith('/blogs');
   const isPlans = pathname.startsWith('/plans');
 
@@ -71,7 +75,9 @@ function MobileNavLinksList({ session, setMobileOpen }) {
       
       {session ? (
         <>
-          {session.user.role === 'partner' ? (
+          {session.user.role === 'admin' ? (
+            <Link href="/admin" className={`drawer-link ${isAdminConsole ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Admin Console</Link>
+          ) : session.user.role === 'partner' ? (
             <Link href="/partner" className={`drawer-link ${isPartnerConsole ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Partner Console</Link>
           ) : (
             <>
@@ -147,7 +153,7 @@ export default function Navbar() {
           <div className="nav-actions">
             {session ? (
               <>
-                <Link href={session.user.role === 'partner' ? "/partner" : "/dashboard"}><button className="btn-nav btn-signin" title="Wallet & Profile"><UserIcon size={18} /></button></Link>
+                <Link href={session.user.role === 'admin' ? "/admin" : (session.user.role === 'partner' ? "/partner" : "/dashboard")}><button className="btn-nav btn-signin" title="Wallet & Profile"><UserIcon size={18} /></button></Link>
                 <button className="btn-nav btn-signin" onClick={() => signOut({ callbackUrl: '/' })} title="Logout">
                   <LogOut size={18} />
                 </button>
@@ -219,7 +225,7 @@ export default function Navbar() {
           <span>Gyms</span>
         </Link>
         {session ? (
-          <Link href={session.user.role === 'partner' ? "/partner" : "/dashboard"} className="bottom-nav-item">
+          <Link href={session.user.role === 'admin' ? "/admin" : (session.user.role === 'partner' ? "/partner" : "/dashboard")} className="bottom-nav-item">
             <UserIcon size={20} />
             <span>Console</span>
           </Link>

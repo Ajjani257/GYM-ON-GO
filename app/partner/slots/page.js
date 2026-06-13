@@ -7,6 +7,21 @@ import { motion } from 'framer-motion';
 
 const itemVariants = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
+function getDaysText(dayOfWeek) {
+  if (!dayOfWeek || dayOfWeek.length === 0) return 'No Days';
+  if (dayOfWeek.length === 7) return 'All Days';
+  if (dayOfWeek.length === 5 && !dayOfWeek.includes(0) && !dayOfWeek.includes(6)) return 'Weekdays';
+  if (dayOfWeek.length === 2 && dayOfWeek.includes(0) && dayOfWeek.includes(6)) return 'Weekends';
+  
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const sortedDays = [...dayOfWeek].sort((a, b) => {
+    const adjA = a === 0 ? 7 : a;
+    const adjB = b === 0 ? 7 : b;
+    return adjA - adjB;
+  });
+  return sortedDays.map(d => dayNames[d]).join(', ');
+}
+
 export default function PartnerSlots() {
   const { data: session } = useSession();
   const { addToast } = useToast();
@@ -24,12 +39,15 @@ export default function PartnerSlots() {
   const [bulkStart, setBulkStart] = useState('06:00');
   const [bulkEnd, setBulkEnd] = useState('22:00');
   const [bulkCapacity, setBulkCapacity] = useState(15);
+  const [bulkDays, setBulkDays] = useState('all'); // 'all', 'weekdays', 'weekends', 'custom'
+  const [bulkCustomDays, setBulkCustomDays] = useState([]);
 
   // New rule states
   const [newRuleStart, setNewRuleStart] = useState('06:00');
   const [newRuleEnd, setNewRuleEnd] = useState('09:00');
   const [newRuleMult, setNewRuleMult] = useState(1.5);
-  const [newRuleDays, setNewRuleDays] = useState('weekdays'); // 'weekdays', 'weekends', 'all'
+  const [newRuleDays, setNewRuleDays] = useState('weekdays'); // 'weekdays', 'weekends', 'all', 'custom'
+  const [customDays, setCustomDays] = useState([]);
 
   useEffect(() => {
     async function loadGym() {
@@ -89,13 +107,25 @@ export default function PartnerSlots() {
       return;
     }
 
+    let slotDays = [0, 1, 2, 3, 4, 5, 6];
+    if (bulkDays === 'weekdays') slotDays = [1, 2, 3, 4, 5];
+    else if (bulkDays === 'weekends') slotDays = [0, 6];
+    else if (bulkDays === 'custom') {
+      if (bulkCustomDays.length === 0) {
+        addToast('Please select at least one custom day for bulk generation', 'error');
+        return;
+      }
+      slotDays = [...bulkCustomDays].sort();
+    }
+
     const generated = [];
     for (let h = startHour; h < endHour; h++) {
       const slotStart = String(h).padStart(2, '0') + ':00';
       const slotEnd = String(h + 1).padStart(2, '0') + ':00';
       generated.push({
         time: `${slotStart} - ${slotEnd}`,
-        capacity: Number(bulkCapacity)
+        capacity: Number(bulkCapacity),
+        days: slotDays
       });
     }
     setSlots(generated);
@@ -113,18 +143,30 @@ export default function PartnerSlots() {
 
   function addCustomSlot() {
     const defaultTime = '09:00 - 10:00';
-    setSlots(prev => [...prev, { time: defaultTime, capacity: 15 }]);
+    setSlots(prev => [...prev, { time: defaultTime, capacity: 15, days: [0, 1, 2, 3, 4, 5, 6] }]);
   }
 
   function updateSlotTime(index, val) {
     setSlots(prev => prev.map((s, i) => i === index ? { ...s, time: val } : s));
   }
 
+  function updateSlotDays(index, days) {
+    setSlots(prev => prev.map((s, i) => i === index ? { ...s, days } : s));
+  }
+
   // Pricing rules utilities
   function addPricingRule() {
-    let days = [1, 2, 3, 4, 5]; // weekdays
-    if (newRuleDays === 'weekends') days = [0, 6];
+    let days = [];
+    if (newRuleDays === 'weekdays') days = [1, 2, 3, 4, 5];
+    else if (newRuleDays === 'weekends') days = [0, 6];
     else if (newRuleDays === 'all') days = [0, 1, 2, 3, 4, 5, 6];
+    else if (newRuleDays === 'custom') {
+      if (customDays.length === 0) {
+        addToast('Please select at least one custom day', 'error');
+        return;
+      }
+      days = [...customDays].sort();
+    }
 
     const newRule = {
       dayOfWeek: days,
@@ -194,7 +236,7 @@ export default function PartnerSlots() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
                 {pricingRules.map((rule, idx) => {
-                  const daysText = rule.dayOfWeek.length === 7 ? 'All Days' : (rule.dayOfWeek.includes(0) && rule.dayOfWeek.includes(6) && rule.dayOfWeek.length === 2 ? 'Weekends' : 'Weekdays');
+                  const daysText = getDaysText(rule.dayOfWeek);
                   const multiplierColor = rule.multiplier >= 1.0 ? 'var(--red)' : 'var(--green)';
                   return (
                     <div key={idx} style={{ background: 'var(--surface-alt)', border: '1px solid var(--line)', padding: '12px 16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -235,6 +277,7 @@ export default function PartnerSlots() {
                     <option value="weekdays">Weekdays (Mon-Fri)</option>
                     <option value="weekends">Weekends (Sat-Sun)</option>
                     <option value="all">All Days (Mon-Sun)</option>
+                    <option value="custom">Custom Days...</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -242,6 +285,51 @@ export default function PartnerSlots() {
                   <input type="number" className="auth-input" value={newRuleMult} onChange={e => setNewRuleMult(e.target.value)} step="0.1" min="0.5" max="3" style={{ marginTop: '4px' }} />
                 </div>
               </div>
+
+              {newRuleDays === 'custom' && (
+                <div className="form-group">
+                  <label style={{ marginBottom: '8px', display: 'block' }}>Select Custom Days</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {[
+                      { label: 'Mon', val: 1 },
+                      { label: 'Tue', val: 2 },
+                      { label: 'Wed', val: 3 },
+                      { label: 'Thu', val: 4 },
+                      { label: 'Fri', val: 5 },
+                      { label: 'Sat', val: 6 },
+                      { label: 'Sun', val: 0 },
+                    ].map(day => {
+                      const isSelected = customDays.includes(day.val);
+                      return (
+                        <button
+                          key={day.val}
+                          type="button"
+                          onClick={() => {
+                            setCustomDays(prev => 
+                              prev.includes(day.val) 
+                                ? prev.filter(d => d !== day.val) 
+                                : [...prev, day.val]
+                            );
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            border: isSelected ? '1px solid var(--red)' : '1px solid var(--card-border)',
+                            background: isSelected ? 'rgba(255, 76, 76, 0.1)' : 'var(--surface-alt)',
+                            color: isSelected ? 'var(--red)' : 'var(--text)',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {day.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <button className="btn-outline" onClick={addPricingRule} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', height: '44px', borderRadius: '10px' }}>
                 <Plus size={16} /> Add Pricing Rule
@@ -259,8 +347,7 @@ export default function PartnerSlots() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Clock size={18} color="var(--blue)" /> Bulk Availability Creator
             </h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div className="form-group">
                 <label>Open Hour</label>
                 <input type="time" className="auth-input" value={bulkStart} onChange={e => setBulkStart(e.target.value)} style={{ marginTop: '4px' }} />
@@ -271,10 +358,66 @@ export default function PartnerSlots() {
               </div>
             </div>
 
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label>Capacity Threshold (Members per slot)</label>
-              <input type="number" className="auth-input" value={bulkCapacity} onChange={e => setBulkCapacity(e.target.value)} style={{ marginTop: '4px', maxWidth: '100px' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div className="form-group">
+                <label>Days</label>
+                <select className="auth-input" value={bulkDays} onChange={e => setBulkDays(e.target.value)} style={{ marginTop: '4px' }}>
+                  <option value="all">All Days (Mon-Sun)</option>
+                  <option value="weekdays">Weekdays (Mon-Fri)</option>
+                  <option value="weekends">Weekends (Sat-Sun)</option>
+                  <option value="custom">Custom Days...</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Capacity Threshold</label>
+                <input type="number" className="auth-input" value={bulkCapacity} onChange={e => setBulkCapacity(e.target.value)} style={{ marginTop: '4px' }} />
+              </div>
             </div>
+
+            {bulkDays === 'custom' && (
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label style={{ marginBottom: '8px', display: 'block' }}>Select Custom Days</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { label: 'Mon', val: 1 },
+                    { label: 'Tue', val: 2 },
+                    { label: 'Wed', val: 3 },
+                    { label: 'Thu', val: 4 },
+                    { label: 'Fri', val: 5 },
+                    { label: 'Sat', val: 6 },
+                    { label: 'Sun', val: 0 },
+                  ].map(day => {
+                    const isSelected = bulkCustomDays.includes(day.val);
+                    return (
+                      <button
+                        key={day.val}
+                        type="button"
+                        onClick={() => {
+                          setBulkCustomDays(prev => 
+                            prev.includes(day.val) 
+                              ? prev.filter(d => d !== day.val) 
+                              : [...prev, day.val]
+                          );
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: isSelected ? '1px solid var(--red)' : '1px solid var(--card-border)',
+                          background: isSelected ? 'rgba(255, 76, 76, 0.1)' : 'var(--surface-alt)',
+                          color: isSelected ? 'var(--red)' : 'var(--text)',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <button className="btn-outline" onClick={handleBulkGenerate} style={{ width: '100%', height: '44px', borderRadius: '10px' }}>
               Generate Standard Hourly Slots
@@ -295,27 +438,75 @@ export default function PartnerSlots() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
                 {slots.map((slot, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--surface-alt)', border: '1px solid var(--line)', padding: '10px 16px', borderRadius: '12px' }}>
-                    <input 
-                      type="text" 
-                      className="auth-input" 
-                      value={slot.time} 
-                      onChange={e => updateSlotTime(idx, e.target.value)} 
-                      style={{ padding: '6px 12px', flex: 1, fontSize: '0.9rem' }} 
-                    />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Cap:</span>
+                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface-alt)', border: '1px solid var(--line)', padding: '14px 16px', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="auth-input" 
-                        value={slot.capacity} 
-                        onChange={e => updateSlotCapacity(idx, e.target.value)} 
-                        style={{ padding: '6px 10px', width: '56px', fontSize: '0.9rem', textAlign: 'center' }} 
+                        value={slot.time} 
+                        onChange={e => updateSlotTime(idx, e.target.value)} 
+                        style={{ padding: '6px 12px', flex: 1, fontSize: '0.9rem' }} 
                       />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Cap:</span>
+                        <input 
+                          type="number" 
+                          className="auth-input" 
+                          value={slot.capacity} 
+                          onChange={e => updateSlotCapacity(idx, e.target.value)} 
+                          style={{ padding: '6px 10px', width: '56px', fontSize: '0.9rem', textAlign: 'center' }} 
+                        />
+                      </div>
+                      <button style={{ background: 'none', color: 'var(--red)', cursor: 'pointer', border: 'none' }} onClick={() => removeSlot(idx)}>
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                    <button style={{ background: 'none', color: 'var(--red)', cursor: 'pointer' }} onClick={() => removeSlot(idx)}>
-                      <Trash2 size={16} />
-                    </button>
+                    
+                    {/* Days selector */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: '4px' }}>Days:</span>
+                      {[
+                        { label: 'M', val: 1 },
+                        { label: 'T', val: 2 },
+                        { label: 'W', val: 3 },
+                        { label: 'T', val: 4 },
+                        { label: 'F', val: 5 },
+                        { label: 'S', val: 6 },
+                        { label: 'S', val: 0 },
+                      ].map(day => {
+                        const slotDays = slot.days || [0,1,2,3,4,5,6];
+                        const isSelected = slotDays.includes(day.val);
+                        return (
+                          <button
+                            key={day.val}
+                            type="button"
+                            onClick={() => {
+                              const newDays = isSelected 
+                                ? slotDays.filter(d => d !== day.val)
+                                : [...slotDays, day.val];
+                              updateSlotDays(idx, newDays);
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              border: isSelected ? '1px solid var(--red)' : '1px solid var(--card-border)',
+                              background: isSelected ? 'rgba(255, 76, 76, 0.1)' : 'var(--surface)',
+                              color: isSelected ? 'var(--red)' : 'var(--muted)',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {day.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>

@@ -13,11 +13,16 @@ const GymSchema = new mongoose.Schema({
   phone: { type: String, default: '' },
   email: { type: String, default: '' },
   image: { type: String, default: '' },
+  location: {
+    lat: { type: Number },
+    lng: { type: Number }
+  },
   amenities: [{ type: String }],
   equipment: [{ type: String }],
   slots: [{
     time: String,
     capacity: { type: Number, default: 20 },
+    days: { type: [Number], default: [0, 1, 2, 3, 4, 5, 6] }
   }],
   priority: { type: Number, default: 0 },
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

@@ -270,7 +270,7 @@ const DEMO_SCREENS = [
         <div style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.15)', borderRadius: 10, padding: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <div style={{ fontSize: '0.55rem', fontWeight: 700, color: '#00f0ff', display: 'flex', alignItems: 'center', gap: 3 }}><Zap size={9} />Loyalty Points</div>
-            <div style={{ fontSize: '0.55rem', color: '#a0aab8' }}>30 to next ₹50</div>
+            <div style={{ fontSize: '0.55rem', color: '#a0aab8' }}>30 to next ₹100</div>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden' }}>
             <div style={{ width: '70%', height: '100%', background: 'linear-gradient(90deg, #00f0ff, #00c8f0)', borderRadius: 999 }} />

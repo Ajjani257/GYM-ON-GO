@@ -146,18 +146,19 @@ function DashboardContent() {
 
   // REVIEW
   const handleSubmitReview = async () => {
-    if (!reviewComment) return addToast('Please enter a comment', 'error');
+    if (!reviewComment.trim()) return addToast('Please enter a comment', 'error');
     const res = await fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: session.user.id, gymId: reviewModal, rating: reviewRating, comment: reviewComment })
     });
+    const data = await res.json();
     if (res.ok) {
       addToast('Review submitted successfully!', 'success');
       setReviewModal(null);
       setReviewComment('');
     } else {
-      addToast('Failed to submit review', 'error');
+      addToast(data.error || 'Failed to submit review', 'error');
     }
   };
 
@@ -311,8 +312,8 @@ function DashboardContent() {
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px' }}>Loyalty Points</h3>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: 10 }}>
               {loyaltyPoints >= 100
-                ? '🎉 Redeeming now — ₹50 credit incoming!'
-                : `${100 - loyaltyPoints} pts to next ₹50 reward`}
+                ? '₹100 reward earned!'
+                : `${100 - loyaltyPoints} pts to next ₹100 reward`}
             </p>
             {/* Progress bar */}
             <div style={{ height: 6, background: 'var(--line)', borderRadius: 999, overflow: 'hidden' }}>
@@ -325,7 +326,7 @@ function DashboardContent() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.75rem', color: 'var(--muted)' }}>
               <span>0 pts</span>
-              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>100 pts = ₹50</span>
+              <span style={{ color: 'var(--blue)', fontWeight: 700 }}>100 pts = ₹100</span>
             </div>
             {lifetimePoints > 0 && (
               <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -516,7 +517,9 @@ function DashboardContent() {
             (tab === 'upcoming' ? upcoming : past).map(b => (
               <div className="booking-item" key={b._id}>
                 <div className="booking-item-info">
-                  <h4>{b.gymName}</h4>
+                  <Link href={`/gyms/${b.gymId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <h4 style={{ cursor: 'pointer' }}>{b.gymName}</h4>
+                  </Link>
                   <p>{b.gymAddress} • {new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', {month:'short',day:'numeric'})} • {b.timeSlot}</p>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',justifyContent:'flex-end'}}>

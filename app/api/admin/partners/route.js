@@ -36,7 +36,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { id, action, address, description, pricePerHour, image, amenities, equipment, hours, priority } = body;
+    const { id, action, address, description, pricePerHour, image, amenities, equipment, hours, priority, reason } = body;
 
     if (!id || !action) {
       return NextResponse.json({ error: 'Missing registration ID or action' }, { status: 400 });
@@ -49,13 +49,42 @@ export async function POST(request) {
 
     if (action === 'reject') {
       application.status = 'rejected';
+      application.rejectionReason = reason || '';
       await application.save();
+
+      const rejectionMessage = reason 
+        ? `Unfortunately, after reviewing your application against our current network criteria, we are unable to proceed with your onboarding at this time.\n\nReason for Rejection:\n${reason}\n\nThank you for your interest and we wish you the best of luck.`
+        : `Unfortunately, after reviewing your application against our current network criteria, we are unable to proceed with your onboarding at this time.\n\nThank you for your interest and we wish you the best of luck.`;
+
+      const rejectionHtmlContent = `
+        <h1>Application Status Update</h1>
+        <p>Hi <strong>${application.ownerName}</strong>,</p>
+        <p>Thank you for applying to the Gym-on-Go Partner Network. We appreciate the time you took to share details about "<strong>${application.gymName}</strong>".</p>
+        <p>Unfortunately, after carefully reviewing your application against our current network criteria and quality standards, we are unable to proceed with your onboarding at this time.</p>
+        
+        ${reason ? `
+        <div class="highlight-box" style="border-left-color: #ef4444; background-color: #fef2f2;">
+          <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; color: #b91c1c; text-transform: uppercase;">Reason for Rejection</h3>
+          <p style="color: #7f1d1d; margin: 0; font-style: italic;">"${reason}"</p>
+        </div>
+        ` : ''}
+        
+        <p>If you make adjustments to your facility and wish to apply again in the future, you are welcome to submit a new application.</p>
+        <p>Thank you for your interest in Gym-on-Go, and we wish you the best of luck with your fitness center.</p>
+        <p>Sincerely,<br><strong>Gym-on-Go Onboarding Team</strong></p>
+      `;
+
+      const rejectionHtml = getEmailHtmlTemplate({
+        title: 'Gym-on-Go Partner Application Status Update',
+        contentHtml: rejectionHtmlContent
+      });
 
       // Send simulated rejection email
       await sendSimulatedEmail({
         to: application.email,
-        subject: `Gym-on-Go Partner Application Status Update`,
-        body: `Hi ${application.ownerName},\n\nThank you for applying to the Gym-on-Go Partner Network.\n\nWe appreciate the time you took to share details about "${application.gymName}". Unfortunately, after reviewing your application against our current network criteria, we are unable to proceed with your onboarding at this time.\n\nThank you for your interest and we wish you the best of luck.\n\nBest regards,\nGym-on-Go Onboarding Team`
+        subject: \`Gym-on-Go Partner Application Status Update\`,
+        body: \`Hi \${application.ownerName},\\n\\nThank you for applying to the Gym-on-Go Partner Network.\\n\\nWe appreciate the time you took to share details about "\${application.gymName}".\\n\\n\${rejectionMessage}\\n\\nBest regards,\\nGym-on-Go Onboarding Team\`,
+        html: rejectionHtml
       });
 
       return NextResponse.json({ message: 'Application rejected' });
@@ -66,24 +95,31 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Address, description, and price per hour are required to onboard.' }, { status: 400 });
       }
 
-      // Check if user already exists
+      // Check if user already exists (allow onboarding by linking to existing account)
       const existingUser = await User.findOne({ email: application.email });
-      if (existingUser) {
-        return NextResponse.json({ error: 'An account with this email already exists' }, { status: 400 });
+      
+      let partnerUser = existingUser;
+      let rawPassword = '';
+
+      if (!existingUser) {
+        // Generate a temporary password
+        rawPassword = Math.random().toString(36).substring(2, 10);
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+        // 1. Create Partner User Account
+        partnerUser = await User.create({
+          name: application.ownerName,
+          email: application.email,
+          password: hashedPassword,
+          role: 'partner',
+          walletBalance: 0,
+        });
+      } else {
+        if (existingUser.role !== 'partner' && existingUser.role !== 'admin') {
+          existingUser.role = 'partner';
+          await existingUser.save();
+        }
       }
-
-      // Generate a temporary password
-      const rawPassword = Math.random().toString(36).substring(2, 10);
-      const hashedPassword = await bcrypt.hash(rawPassword, 10);
-
-      // 1. Create Partner User Account
-      const partnerUser = await User.create({
-        name: application.ownerName,
-        email: application.email,
-        password: hashedPassword,
-        role: 'partner',
-        walletBalance: 0,
-      });
 
       // Default Slots Structure
       const defaultSlots = [
@@ -121,13 +157,33 @@ export async function POST(request) {
       application.status = 'approved';
       await application.save();
 
-      // 4. Send welcome email with login credentials in HTML
-      const welcomeSubject = `🎉 Welcome to Gym-on-Go! Your Partner Account is Live`;
-      const welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.gymName}" to the Gym-on-Go Network!\n\nYour facilities have been verified and your profile is now live.\n\nYour Partner Dashboard Login Credentials:\n- Dashboard URL: http://localhost:3000/auth\n- Username/Email: ${application.email}\n- Temporary Password: ${rawPassword}\n\nPlease log in and change your password. You can manage timing slots, pricing rules, and scan visitor QR codes.\n\nBest regards,\nGym-on-Go Team`;
+      // 4. Send welcome email with login credentials
+      const welcomeSubject = existingUser
+        ? `🎉 Welcome Back to Gym-on-Go! Your New Gym "${application.gymName}" is Live`
+        : `🎉 Welcome to Gym-on-Go! Your Partner Account is Live`;
 
-      const welcomeHtml = getEmailHtmlTemplate({
-        title: welcomeSubject,
-        contentHtml: `
+      let welcomeBody = '';
+      let welcomeHtmlContent = '';
+
+      if (existingUser) {
+        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.gymName}" to the Gym-on-Go Network!\n\nThis gym has been successfully linked to your existing partner account (${application.email}).\n\nYou can manage this gym profile by logging in using your existing dashboard credentials.\n\nDashboard URL: http://localhost:3000/auth\n\nBest regards,\nGym-on-Go Team`;
+
+        welcomeHtmlContent = `
+          <h1>Congratulations ${application.ownerName},</h1>
+          <p>We are thrilled to inform you that your application has been approved and <strong>${application.gymName}</strong> is officially live in the Gym-on-Go network!</p>
+          <p>This gym has been successfully linked to your existing partner account (<strong>${application.email}</strong>).</p>
+          <p>You can manage this profile by logging in with your existing credentials at the Partner Dashboard.</p>
+          
+          <div class="btn-container">
+            <a href="http://localhost:3000/auth" class="btn-action" style="background-color: #10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">Log In to Partner Dashboard</a>
+          </div>
+          <p>Welcome back! We look forward to our continued partnership.</p>
+          <p>Sincerely,<br><strong>The Gym-on-Go Team</strong></p>
+        `;
+      } else {
+        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.gymName}" to the Gym-on-Go Network!\n\nYour facilities have been verified and your profile is now live.\n\nYour Partner Dashboard Login Credentials:\n- Dashboard URL: http://localhost:3000/auth\n- Username/Email: ${application.email}\n- Temporary Password: ${rawPassword}\n\nPlease log in and change your password. You can manage timing slots, pricing rules, and scan visitor QR codes.\n\nBest regards,\nGym-on-Go Team`;
+
+        welcomeHtmlContent = `
           <h1>Congratulations ${application.ownerName},</h1>
           <p>We are thrilled to inform you that your application has been approved and <strong>${application.gymName}</strong> is officially live in the Gym-on-Go network!</p>
           <p>Our representative has verified your facility details, and your public profile is now visible to members in the explore section.</p>
@@ -166,7 +222,12 @@ export async function POST(request) {
           
           <p>Welcome aboard! We look forward to a successful partnership.</p>
           <p>Sincerely,<br><strong>The Gym-on-Go Team</strong></p>
-        `
+        `;
+      }
+
+      const welcomeHtml = getEmailHtmlTemplate({
+        title: welcomeSubject,
+        contentHtml: welcomeHtmlContent
       });
 
       await sendSimulatedEmail({
@@ -178,7 +239,7 @@ export async function POST(request) {
 
       return NextResponse.json({
         message: 'Onboarding completed successfully!',
-        credentials: {
+        credentials: existingUser ? null : {
           email: application.email,
           password: rawPassword,
         },
