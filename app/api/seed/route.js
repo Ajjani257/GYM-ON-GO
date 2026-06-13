@@ -152,7 +152,7 @@ const SEED_GYMS = [
 export async function POST() {
   try {
     await dbConnect();
-    await Gym.deleteMany({}); // Clear existing
+    // await Gym.deleteMany({}); // Prevent accidentally clearing existing gyms
     const gyms = await Gym.insertMany(SEED_GYMS);
     return NextResponse.json({ message: `Seeded ${gyms.length} gyms`, gyms });
   } catch (error) {
