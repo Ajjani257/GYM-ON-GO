@@ -135,7 +135,7 @@ export default function Navbar() {
                 <rect x="4" y="8" width="2" height="12" rx="1" fill="currentColor"/>
                 <rect x="22" y="8" width="2" height="12" rx="1" fill="currentColor"/>
               </svg>
-              <span>GYM-ON-GO</span>
+              <span style={{ whiteSpace: 'nowrap' }}>GYM-ON-GO</span>
             </Link>
           </div>
 

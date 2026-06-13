@@ -445,45 +445,8 @@ input,select{font-family:var(--font-body);}
   .detail-hero{height:220px;border-radius:12px;}
   .btn-back{top:16px;left:16px;padding:8px 14px;font-size:0.8rem;}
 
-  /* Booking Sidebar -> Sticky Bottom Sheet */
-  .booking-sidebar {
-    position: fixed;
-    bottom: 76px; /* Above mobile bottom nav */
-    left: 0;
-    right: 0;
-    z-index: 100;
-    background: var(--surface);
-    padding: 12px 16px;
-    border-top: 1px solid var(--line);
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-  }
-  .booking-card {
-    border: none;
-    padding: 0;
-    position: static;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .booking-card .booking-price {
-    margin-bottom: 0;
-    font-size: 1.2rem;
-  }
-  .booking-card .booking-price .price-val {
-    font-size: 1.4rem;
-  }
-  .booking-card .booking-field {
-    margin-bottom: 0;
-  }
-  .booking-card .btn-primary {
-    padding: 10px;
-    font-size: 0.9rem;
-    height: 44px;
-  }
-  
-  /* Prevent content from hiding behind sticky bottom */
-  body { padding-bottom: 350px; overflow-x: hidden; }
-  .detail-card { padding: 16px !important; overflow-x: hidden; }
+  /* Filter Layouts */
+  .filters-bar { padding: 16px; gap: 12px; }
 }
 
 /* DRAWER MENU LINKS */
