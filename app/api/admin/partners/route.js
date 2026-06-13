@@ -82,8 +82,8 @@ export async function POST(request) {
       // Send simulated rejection email
       await sendSimulatedEmail({
         to: application.email,
-        subject: \`Gym-on-Go Partner Application Status Update\`,
-        body: \`Hi \${application.ownerName},\\n\\nThank you for applying to the Gym-on-Go Partner Network.\\n\\nWe appreciate the time you took to share details about "\${application.gymName}".\\n\\n\${rejectionMessage}\\n\\nBest regards,\\nGym-on-Go Onboarding Team\`,
+        subject: `Gym-on-Go Partner Application Status Update`,
+        body: `Hi ${application.ownerName},\n\nThank you for applying to the Gym-on-Go Partner Network.\n\nWe appreciate the time you took to share details about "${application.gymName}".\n\n${rejectionMessage}\n\nBest regards,\nGym-on-Go Onboarding Team`,
         html: rejectionHtml
       });
 
