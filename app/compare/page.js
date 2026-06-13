@@ -82,7 +82,10 @@ function CompareContent() {
           </div>
         </div>
 
-        {/* Gym header cards */}
+        {/* Comparison Scroll Wrapper */}
+        <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
+          <div style={{ minWidth: 200 + gyms.length * 200 }}>
+            {/* Gym header cards */}
         <div style={{ display: 'grid', gridTemplateColumns: `200px repeat(${gyms.length}, 1fr)`, gap: 16, marginBottom: 8, alignItems: 'start' }}>
           <div />
           {gyms.map((gym, i) => (
@@ -210,6 +213,9 @@ function CompareContent() {
             </div>
           );
         })()}
+        
+          </div>
+        </div>
 
         {/* CTA */}
         <div style={{ textAlign: 'center' }}>
