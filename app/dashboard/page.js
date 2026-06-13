@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { TrendingUp, Flame, CalendarDays, Bookmark, CalendarX2, Wallet, Star, MapPin, Copy, Users, Gift, CheckCircle, Clock, Zap, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AdBanner from '@/components/AdBanner';
 import { useToast } from '@/components/Toast';
 
 function getLocalDateString(date) {
@@ -189,7 +190,7 @@ function DashboardContent() {
         </div>
         
         {/* WALLET WIDGET */}
-        <div style={{background:'var(--surface-alt)',padding:'16px 24px',borderRadius:16,display:'flex',alignItems:'center',gap:24,border:'1px solid var(--line)'}}>
+        <div style={{background:'var(--surface-alt)',padding:'16px 20px',borderRadius:16,display:'flex',alignItems:'center',gap:16,border:'1px solid var(--line)',flexWrap:'wrap'}}>
           <div>
             <div style={{color:'var(--muted)',fontSize:'0.85rem',display:'flex',alignItems:'center',gap:6,marginBottom:4}}>
               <Wallet size={14} /> Wallet Balance
@@ -208,7 +209,7 @@ function DashboardContent() {
       </div>
 
       {/* VISUAL DASHBOARD WIDGETS */}
-      <motion.div className="dash-widgets" variants={containerVariants} initial="hidden" animate="visible" style={{ marginTop: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+      <motion.div className="dash-widgets" variants={containerVariants} initial="hidden" animate="visible" style={{ marginTop: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
         
         {/* WIDGET 1: Streak Ring */}
         <motion.div variants={itemVariants} style={{ background: 'var(--surface-alt)', padding: '24px', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '24px', border: '1px solid var(--line)' }}>
@@ -335,6 +336,11 @@ function DashboardContent() {
             )}
           </div>
         </motion.div>
+
+        {/* Dash Ad Banner */}
+        <div style={{ marginTop: '20px' }}>
+          <AdBanner dataAdSlot="dashboard_mid_ad" />
+        </div>
 
       </motion.div>
 

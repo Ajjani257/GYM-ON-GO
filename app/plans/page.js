@@ -107,7 +107,7 @@ export default function PlansPage() {
 
       {/* Plan Cards */}
       <div className="container" style={{ paddingBottom: 80 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, marginBottom: 80 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32, marginBottom: 80 }}>
           {['corporate', 'parent'].map((type, idx) => {
             const plan = PLAN_FEATURES[type];
             const Icon = plan.icon;
@@ -117,7 +117,7 @@ export default function PlansPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
-                style={{ background: plan.gradient, border: `1px solid ${plan.border}`, borderRadius: 28, padding: '40px 36px', position: 'relative', overflow: 'hidden' }}
+                style={{ background: plan.gradient, border: `1px solid ${plan.border}`, borderRadius: 28, padding: '32px 24px', position: 'relative', overflow: 'hidden' }}
               >
                 {/* Glow blob */}
                 <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: plan.color, opacity: 0.06, filter: 'blur(40px)', pointerEvents: 'none' }} />

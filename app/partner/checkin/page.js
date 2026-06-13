@@ -82,13 +82,13 @@ export default function PartnerCheckIn() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '32px', alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'start' }}>
       
       {/* LEFT COLUMN: MANUAL CHECK-IN & CAMERA VISOR */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* MANUAL FORM */}
-        <div className="detail-card" style={{ padding: '28px' }}>
+        <div className="detail-card" style={{ padding: '20px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <QrCode size={18} color="var(--red)" /> Front-Desk Attendance Verifier
           </h3>
@@ -96,7 +96,7 @@ export default function PartnerCheckIn() {
             Input the 8-character code displayed below the member\'s QR code or type their MongoDB Booking ID to complete check-in.
           </p>
 
-          <form onSubmit={e => { e.preventDefault(); handleCheckIn(bookingId); }} style={{ display: 'flex', gap: '12px' }}>
+          <form onSubmit={e => { e.preventDefault(); handleCheckIn(bookingId); }} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
             <div className="input-wrap" style={{ flexGrow: 1 }}>
               <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
               <input 

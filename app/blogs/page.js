@@ -73,8 +73,8 @@ export default function BlogsPage() {
           </div>
 
           {/* Search Input */}
-          <div className="search-input" style={{ width: '320px', minWidth: 'auto', flex: 'none' }}>
-            <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
+          <div style={{ flexGrow: 1, minWidth: '240px', position: 'relative' }}>
+            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
             <input 
               type="text" 
               placeholder="Search articles..." 
@@ -110,7 +110,7 @@ export default function BlogsPage() {
             variants={containerVariants} 
             initial="hidden" 
             animate="visible"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '32px' }}
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}
           >
             {filteredBlogs.map(blog => (
               <motion.div key={blog._id} variants={itemVariants}>

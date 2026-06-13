@@ -83,10 +83,10 @@ function CompareContent() {
         </div>
 
         {/* Comparison Scroll Wrapper */}
-        <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
-          <div style={{ minWidth: 200 + gyms.length * 200 }}>
+        <div style={{ overflowX: 'auto', paddingBottom: 24, margin: '0 -16px', padding: '0 16px' }}>
+          <div style={{ minWidth: gyms.length > 2 ? 100 + gyms.length * 150 : 'auto' }}>
             {/* Gym header cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: `200px repeat(${gyms.length}, 1fr)`, gap: 16, marginBottom: 8, alignItems: 'start' }}>
+        <div className="compare-grid" style={{ '--cols': gyms.length, gap: 16, marginBottom: 8, alignItems: 'start' }}>
           <div />
           {gyms.map((gym, i) => (
             <motion.div
@@ -130,7 +130,8 @@ function CompareContent() {
             return (
               <div
                 key={row.key}
-                style={{ display: 'grid', gridTemplateColumns: `200px repeat(${gyms.length}, 1fr)`, borderBottom: ri < COMPARE_ROWS.length - 1 ? '1px solid var(--line)' : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                className="compare-grid"
+                style={{ '--cols': gyms.length, borderBottom: ri < COMPARE_ROWS.length - 1 ? '1px solid var(--line)' : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
               >
                 <div style={{ padding: '18px 24px', fontWeight: 700, color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>{row.label}</div>
                 {gyms.map((gym, gi) => {
@@ -161,7 +162,8 @@ function CompareContent() {
               {allAmenities.map((amenity, ai) => (
                 <div
                   key={amenity}
-                  style={{ display: 'grid', gridTemplateColumns: `200px repeat(${gyms.length}, 1fr)`, borderBottom: ai < allAmenities.length - 1 ? '1px solid var(--line)' : 'none', background: ai % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                  className="compare-grid"
+                  style={{ '--cols': gyms.length, borderBottom: ai < allAmenities.length - 1 ? '1px solid var(--line)' : 'none', background: ai % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
                 >
                   <div style={{ padding: '14px 24px', color: 'var(--soft)', fontSize: '0.88rem', display: 'flex', alignItems: 'center' }}>{amenity}</div>
                   {gyms.map(gym => {
@@ -192,7 +194,8 @@ function CompareContent() {
               {allEquipment.map((eq, ei) => (
                 <div
                   key={eq}
-                  style={{ display: 'grid', gridTemplateColumns: `200px repeat(${gyms.length}, 1fr)`, borderBottom: ei < allEquipment.length - 1 ? '1px solid var(--line)' : 'none', background: ei % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                  className="compare-grid"
+                  style={{ '--cols': gyms.length, borderBottom: ei < allEquipment.length - 1 ? '1px solid var(--line)' : 'none', background: ei % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
                 >
                   <div style={{ padding: '14px 24px', color: 'var(--soft)', fontSize: '0.88rem', display: 'flex', alignItems: 'center' }}>{eq}</div>
                   {gyms.map(gym => {

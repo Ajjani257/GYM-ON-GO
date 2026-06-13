@@ -198,7 +198,7 @@ export default function PartnerSlots() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '32px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'start' }}>
         
         {/* LEFT COLUMN: BASE PRICE & DYNAMIC RULES */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

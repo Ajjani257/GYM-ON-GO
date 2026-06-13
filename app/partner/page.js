@@ -74,11 +74,11 @@ export default function PartnerOverview() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       
       {/* VENUE SUMMARY BANNER */}
-      <motion.div variants={itemVariants} className="detail-card" style={{ padding: '32px', display: 'grid', gridTemplateColumns: '120px 1fr', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <motion.div variants={itemVariants} className="detail-card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center' }}>
         <img 
           src={gym.image || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&q=80'} 
           alt={gym.name} 
-          style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '16px', border: '1px solid var(--card-border)' }} 
+          style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '16px', border: '1px solid var(--card-border)', flexShrink: 0 }} 
         />
         <div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{gym.name}</h2>
@@ -121,7 +121,7 @@ export default function PartnerOverview() {
       </motion.div>
 
       {/* VISUAL CHARTS SECTION */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
         
         {/* REVENUE TIMELINE CHART */}
         <motion.div variants={itemVariants} className="detail-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '320px' }}>

@@ -80,17 +80,17 @@ export default function BlogDetailPage({ params }) {
 
   return (
     <>
-      <div className="detail-hero" style={{ height: '360px', position: 'relative' }}>
+      <div className="detail-hero" style={{ position: 'relative' }}>
         <img src={blog.image || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1400&q=80'} alt={blog.title} />
         <div className="detail-hero-overlay"></div>
-        <button className="btn-back" onClick={() => router.push('/blogs')} style={{ top: '100px' }}><ArrowLeft size={16} /> Blogs</button>
+        <button className="btn-back" onClick={() => router.push('/blogs')}><ArrowLeft size={16} /> Blogs</button>
       </div>
 
-      <div className="container" style={{ padding: '0 24px 80px 24px', marginTop: '-60px', position: 'relative', zIndex: 10 }}>
+      <div className="container" style={{ marginTop: '-60px', position: 'relative', zIndex: 10 }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           
           {/* ARTICLE BODY CARD */}
-          <div className="detail-card" style={{ padding: '48px', backdropFilter: 'blur(30px)' }}>
+          <div className="detail-card" style={{ backdropFilter: 'blur(30px)' }}>
             
             {/* Tag / Category Badge */}
             {blog.tags && blog.tags.length > 0 && (
@@ -99,7 +99,7 @@ export default function BlogDetailPage({ params }) {
               </span>
             )}
 
-            <h1 style={{ fontSize: '2.8rem', fontWeight: 900, marginBottom: '24px', lineHeight: 1.2, fontFamily: 'var(--font-head)' }}>
+            <h1 className="detail-name" style={{ marginBottom: '24px', lineHeight: 1.2 }}>
               {blog.title}
             </h1>
 
