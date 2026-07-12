@@ -498,7 +498,7 @@ export default function AdminDashboard() {
                     
                     <button 
                       onClick={async () => {
-                        if (!window.confirm(`Are you sure you want to remove ${gym.name} from the Gym-on-Go network? This action is permanent and will remove it from the customer explore page.`)) return;
+                        if (!window.confirm(`Are you sure you want to remove ${gym.name} from the Clickongo network? This action is permanent and will remove it from the customer explore page.`)) return;
                         try {
                           const res = await fetch(`/api/gyms/${gym._id}`, { method: 'DELETE' });
                           if (res.ok) {

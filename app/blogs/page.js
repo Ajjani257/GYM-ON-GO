@@ -45,7 +45,7 @@ export default function BlogsPage() {
         <div className="container" style={{ textAlign: 'center' }}>
           <span className="section-badge">Fitness Guides & Insights</span>
           <h1 className="page-title" style={{ fontSize: '3.5rem', fontWeight: 900, textTransform: 'uppercase' }}>
-            GYM-ON-GO <span style={{ color: 'var(--red)' }}>BLOGS</span>
+            Clickongo <span style={{ color: 'var(--red)' }}>BLOGS</span>
           </h1>
           <p className="page-sub" style={{ maxWidth: '600px', margin: '16px auto 0' }}>
             Expert advice on workout efficiency, dynamic stretches, nutrition, and tips to maximize your hourly gym sessions.

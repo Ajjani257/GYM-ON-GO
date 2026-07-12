@@ -49,14 +49,14 @@ export async function POST(request) {
       : '<span style="color: #94a3b8; font-size: 14px;">None specified</span>';
 
     // 1. Send email to Gym Owner
-    const ownerSubject = `Gym-on-Go Partner Network – Application Received (${gymName})`;
-    const ownerBody = `Hi ${ownerName},\n\nThank you for submitting your application to register "${gymName}" in the Gym-on-Go network. We have successfully received your details!\n\nHere is a summary of the information you submitted:\n- Gym Name: ${gymName}\n- Physical Address: ${address}, ${city} - ${pincode}\n- Operating Hours: ${operatingHours}\n- Phone: ${phone}\n- Website/Social: ${website || 'N/A'}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n\nWhat happens next:\n1. Virtual Verification: Our team will review your digital presence and location coordinates.\n2. Verification Check: A representative will contact you at ${phone} to schedule a quick on-site visit to inspect amenities, gym ambience, and safety standards.\n3. Account Activation: Once verified, we will generate your live profile and email your secure Partner Dashboard credentials.\n\nYour Registration Reference Code: ${refCode}\n\nBest regards,\nGym-on-Go Onboarding Team`;
+    const ownerSubject = `Clickongo Partner Network – Application Received (${gymName})`;
+    const ownerBody = `Hi ${ownerName},\n\nThank you for submitting your application to register "${gymName}" in the Clickongo network. We have successfully received your details!\n\nHere is a summary of the information you submitted:\n- Gym Name: ${gymName}\n- Physical Address: ${address}, ${city} - ${pincode}\n- Operating Hours: ${operatingHours}\n- Phone: ${phone}\n- Website/Social: ${website || 'N/A'}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n\nWhat happens next:\n1. Virtual Verification: Our team will review your digital presence and location coordinates.\n2. Verification Check: A representative will contact you at ${phone} to schedule a quick on-site visit to inspect amenities, gym ambience, and safety standards.\n3. Account Activation: Once verified, we will generate your live profile and email your secure Partner Dashboard credentials.\n\nYour Registration Reference Code: ${refCode}\n\nBest regards,\nClickongo Onboarding Team`;
 
     const ownerHtml = getEmailHtmlTemplate({
       title: ownerSubject,
       contentHtml: `
         <h1>Hello ${ownerName},</h1>
-        <p>Thank you for submitting your application to join the Gym-on-Go Partner Network. We are excited about the possibility of partnering with <strong>${gymName}</strong>.</p>
+        <p>Thank you for submitting your application to join the Clickongo Partner Network. We are excited about the possibility of partnering with <strong>${gymName}</strong>.</p>
         <p>Our onboarding team has received your registration details. Here is a summary of the information you submitted:</p>
         
         <table class="details-table">
@@ -96,9 +96,9 @@ export async function POST(request) {
         </div>
         
         <p>Your unique application reference code is: <strong style="color: #ff3e00; font-family: monospace; font-size: 16px;">${refCode}</strong>. Please keep this code for future reference.</p>
-        <p>If you have any questions or need to make corrections to your application, please reply directly to this email or write to us at <a href="mailto:supportgymongo@gmail.com" style="color: #ff3e00; text-decoration: none;">supportgymongo@gmail.com</a>.</p>
+        <p>If you have any questions or need to make corrections to your application, please reply directly to this email or write to us at <a href="mailto:supportclickongo@gmail.com" style="color: #ff3e00; text-decoration: none;">supportclickongo@gmail.com</a>.</p>
         <br>
-        <p>Best regards,<br><strong>Gym-on-Go Onboarding Team</strong></p>
+        <p>Best regards,<br><strong>Clickongo Onboarding Team</strong></p>
       `
     });
 
@@ -111,13 +111,13 @@ export async function POST(request) {
 
     // 2. Send email to Admin
     const adminSubject = `🚨 Action Required: New Partner Application - ${gymName}`;
-    const adminBody = `Hello Admin,\n\nA new gym has applied to register on the Gym-on-Go platform.\n\nGym Details:\n- Gym Name: ${gymName}\n- Owner: ${ownerName}\n- Email: ${email}\n- Phone: ${phone}\n- Location: ${address}, ${city} - ${pincode}\n- Maps Link: ${mapsLink || 'Not provided'}\n- Website: ${website || 'Not provided'}\n- Operating Hours: ${operatingHours}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n- Application ID: ${application._id}\n- Reference Code: ${refCode}\n\nRequired Action:\n1. Review the online maps and social links to run a quick virtual validation.\n2. Assign a team member to contact ${ownerName} at ${phone} and schedule a physical verification check (ambience, amenities, genuinity).\n3. Once verified, log into the Platform Admin Dashboard to complete their profile setup and approve their account.\n\nReview application here: http://localhost:3000/admin`;
+    const adminBody = `Hello Admin,\n\nA new gym has applied to register on the Clickongo platform.\n\nGym Details:\n- Gym Name: ${gymName}\n- Owner: ${ownerName}\n- Email: ${email}\n- Phone: ${phone}\n- Location: ${address}, ${city} - ${pincode}\n- Maps Link: ${mapsLink || 'Not provided'}\n- Website: ${website || 'Not provided'}\n- Operating Hours: ${operatingHours}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n- Application ID: ${application._id}\n- Reference Code: ${refCode}\n\nRequired Action:\n1. Review the online maps and social links to run a quick virtual validation.\n2. Assign a team member to contact ${ownerName} at ${phone} and schedule a physical verification check (ambience, amenities, genuinity).\n3. Once verified, log into the Platform Admin Dashboard to complete their profile setup and approve their account.\n\nReview application here: http://localhost:3000/admin`;
 
     const adminHtml = getEmailHtmlTemplate({
       title: adminSubject,
       contentHtml: `
         <h1 style="color: #0f172a;">New Gym Registration Pending Review</h1>
-        <p>A new partner has submitted an application to join the Gym-on-Go network. Please coordinate virtual verification and schedule the physical check.</p>
+        <p>A new partner has submitted an application to join the Clickongo network. Please coordinate virtual verification and schedule the physical check.</p>
         
         <div class="highlight-box" style="border-left-color: #ff3e00; background-color: #fff8f6;">
           <h2 style="margin: 0 0 10px 0; font-size: 15px; color: #991b1b; font-weight: 700;">Onboarding Checklist</h2>
@@ -182,7 +182,7 @@ export async function POST(request) {
     });
 
     await sendSimulatedEmail({
-      to: process.env.SMTP_USER || 'admin@gymongo.com',
+      to: process.env.SMTP_USER || 'admin@clickongo.com',
       subject: adminSubject,
       body: adminBody,
       html: adminHtml

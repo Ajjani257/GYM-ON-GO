@@ -6,7 +6,7 @@ const BlogSchema = new mongoose.Schema({
   excerpt: { type: String, required: true },
   content: { type: String, required: true },
   image: { type: String, default: '' },
-  author: { type: String, default: 'GYM-ON-GO Team' },
+  author: { type: String, default: 'Clickongo Team' },
   tags: [{ type: String }],
   readTime: { type: String, default: '5 min' },
 }, { timestamps: true });

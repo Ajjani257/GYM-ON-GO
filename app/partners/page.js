@@ -233,7 +233,7 @@ export default function Partners() {
         </div>
         <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <div className="section-badge">For gym owners</div>
-          <h1 className="hero-title">Grow your gym with Gym-on-Go</h1>
+          <h1 className="hero-title">Grow your gym with Clickongo</h1>
           <p className="hero-sub" style={{ margin: '16px auto', maxWidth: 500 }}>
             List your gym and reach thousands of active fitness seekers in your city.
           </p>
@@ -275,7 +275,7 @@ export default function Partners() {
           <>
             <h2>Register Your Gym</h2>
             <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 24 }}>
-              Partner with Gym-on-Go to list your gym, open slots, and grow your revenue.
+              Partner with Clickongo to list your gym, open slots, and grow your revenue.
             </p>
 
             {/* Step Indicator */}

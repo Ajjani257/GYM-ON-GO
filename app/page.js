@@ -44,7 +44,7 @@ const DEMO_SCREENS = [
   {
     id: 'home',
     label: '🏠 Landing Page',
-    desc: 'Users discover GYM-ON-GO — no subscription, no commitment.',
+    desc: 'Users discover Clickongo — no subscription, no commitment.',
     bg: 'linear-gradient(160deg, #0d0d0f 0%, #1a0a00 60%, #0d0d0f 100%)',
     render: () => (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 16px', gap: 12 }}>

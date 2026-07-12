@@ -435,7 +435,7 @@ function DashboardContent() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
               {/* WhatsApp */}
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Hey! Join me on GYM-ON-GO — the smartest way to book gym sessions by the hour. Use my code ${referralCode} to get ₹50 free credits when you sign up! 🏋️ https://gym-on-go.vercel.app/auth?ref=${referralCode}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Hey! Join me on Clickongo — the smartest way to book gym sessions by the hour. Use my code ${referralCode} to get ₹50 free credits when you sign up! 🏋️ https://clickongo.vercel.app/auth?ref=${referralCode}`)}`}
                 target="_blank" rel="noreferrer"
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#25D366', color: '#fff', padding: '10px 18px', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.88rem' }}
               >
@@ -444,7 +444,7 @@ function DashboardContent() {
               </a>
               {/* Email */}
               <a
-                href={`mailto:?subject=${encodeURIComponent('Try GYM-ON-GO – Book gyms by the hour!')}&body=${encodeURIComponent(`Hey!\n\nI've been using GYM-ON-GO to book gym sessions by the hour — no subscriptions, just pay when you go.\n\nUse my referral code ${referralCode} when you sign up and get ₹50 free credits!\n\nSign up here: https://gym-on-go.vercel.app/auth?ref=${referralCode}\n\nSee you at the gym! 💪`)}`}
+                href={`mailto:?subject=${encodeURIComponent('Try Clickongo – Book gyms by the hour!')}&body=${encodeURIComponent(`Hey!\n\nI've been using Clickongo to book gym sessions by the hour — no subscriptions, just pay when you go.\n\nUse my referral code ${referralCode} when you sign up and get ₹50 free credits!\n\nSign up here: https://clickongo.vercel.app/auth?ref=${referralCode}\n\nSee you at the gym! 💪`)}`}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--line)', padding: '10px 18px', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.88rem' }}
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -452,7 +452,7 @@ function DashboardContent() {
               </a>
               {/* Copy link */}
               <button
-                onClick={() => { navigator.clipboard.writeText(`https://gym-on-go.vercel.app/auth?ref=${referralCode}`); addToast('Referral link copied!', 'success'); }}
+                onClick={() => { navigator.clipboard.writeText(`https://clickongo.vercel.app/auth?ref=${referralCode}`); addToast('Referral link copied!', 'success'); }}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--line)', padding: '10px 18px', borderRadius: '12px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}
               >
                 <Copy size={14} /> Copy Link
@@ -556,7 +556,7 @@ function DashboardContent() {
         <div className="modal-overlay" onClick={() => setWalletModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <h2>Add Funds via Mock Razorpay</h2>
-            <p className="sub">Enter amount to add to your GYM-ON-GO wallet.</p>
+            <p className="sub">Enter amount to add to your Clickongo wallet.</p>
             <input type="number" className="auth-input" value={fundAmount} onChange={e => setFundAmount(e.target.value)} min="100" />
             <div className="modal-actions" style={{marginTop:24}}>
               <button className="btn-primary" onClick={handleAddFunds}>Pay ₹{fundAmount}</button>

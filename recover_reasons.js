@@ -27,7 +27,7 @@ async function recover() {
       // Try to find the rejection email sent to this partner
       const emailLog = await EmailLog.findOne({ 
         to: partner.email,
-        subject: /Gym-on-Go Partner Application Status Update/i
+        subject: /Clickongo Partner Application Status Update/i
       }).sort({ createdAt: -1 });
 
       if (emailLog && emailLog.body) {

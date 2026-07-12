@@ -10,7 +10,7 @@ const inter = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '60
 const outfit = Outfit({ subsets: ['latin'], weight: ['600', '700', '800', '900'], variable: '--font-head' });
 
 export const metadata = {
-  title: "GYM-ON-GO — Flexible Gym Sessions Near You",
+  title: "Clickongo — Flexible Gym Sessions Near You",
   description: "Find nearby gyms, compare prices, and book hourly workout sessions without a membership.",
 };
 

@@ -12,9 +12,9 @@ export default function Footer() {
             <rect x="4" y="8" width="2" height="12" rx="1" fill="currentColor"/>
             <rect x="22" y="8" width="2" height="12" rx="1" fill="currentColor"/>
           </svg>
-          <span>GYM-ON-GO</span>
+          <span>Clickongo</span>
         </div>
-        <div className="footer-copy">&copy; {new Date().getFullYear()} GYM-ON-GO. All rights reserved.</div>
+        <div className="footer-copy">&copy; {new Date().getFullYear()} Clickongo. All rights reserved.</div>
       </div>
     </footer>
   );
