@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const GymSchema = new mongoose.Schema({
+const VenueSchema = new mongoose.Schema({
   name: { type: String, required: true },
   address: { type: String, required: true },
   city: { type: String, required: true },
@@ -8,6 +8,8 @@ const GymSchema = new mongoose.Schema({
   pricePerHour: { type: Number, required: true },
   rating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },
+  category: { type: String, enum: ['gym', 'badminton', 'football', 'tennis', 'swimming', 'cricket'], default: 'gym' },
+  bookingType: { type: String, enum: ['per_person', 'per_court'], default: 'per_person' },
   crowdLevel: { type: String, enum: ['low', 'moderate', 'high'], default: 'low' },
   hours: { type: String, default: '06:00 - 22:00' },
   phone: { type: String, default: '' },
@@ -34,4 +36,4 @@ const GymSchema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
-export default mongoose.models.Gym || mongoose.model('Gym', GymSchema);
+export default mongoose.models.Venue || mongoose.model('Venue', VenueSchema);

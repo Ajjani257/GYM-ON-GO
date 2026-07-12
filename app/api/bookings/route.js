@@ -19,10 +19,10 @@ export async function GET(request) {
 
     let filter = {};
     if (session.user.role === 'partner') {
-      const Gym = (await import('@/models/Gym')).default;
-      const gym = await Gym.findOne({ ownerId: session.user.id });
+      const Venue = (await import('@/models/Venue')).default;
+      const gym = await Venue.findOne({ ownerId: session.user.id });
       if (gym) {
-        filter.gymId = gym._id;
+        filter.venueId = gym._id;
       } else {
         return NextResponse.json([]);
       }
@@ -66,9 +66,9 @@ export async function POST(request) {
 
     await dbConnect();
     const body = await request.json();
-    const { gymId, date, timeSlot, price, gymName, gymAddress } = body;
+    const { venueId, date, timeSlot, price, venueName, venueAddress } = body;
 
-    if (!gymId || !date || !timeSlot || price === undefined || !gymName || !gymAddress) {
+    if (!venueId || !date || !timeSlot || price === undefined || !venueName || !venueAddress) {
       return NextResponse.json({ error: 'Missing required booking fields' }, { status: 400 });
     }
 
@@ -86,7 +86,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient wallet balance. Please add funds.' }, { status: 400 });
     }
 
-    const existing = await Booking.findOne({ gymId, date, timeSlot, userId: session.user.id, status: 'upcoming' });
+    const existing = await Booking.findOne({ venueId, date, timeSlot, userId: session.user.id, status: 'upcoming' });
     if (existing) {
       return NextResponse.json({ error: 'You already booked this slot' }, { status: 400 });
     }
@@ -95,14 +95,14 @@ export async function POST(request) {
     await user.save();
 
     const booking = await Booking.create({
-      userId: session.user.id, gymId, date, timeSlot, price, gymName, gymAddress, status: 'upcoming'
+      userId: session.user.id, venueId, date, timeSlot, price, venueName, venueAddress, status: 'upcoming'
     });
 
     await Transaction.create({
       userId: session.user.id,
       type: 'debit',
       amount: price,
-      description: `Booked session at ${gymName}`
+      description: `Booked session at ${venueName}`
     });
 
     // Award loyalty points: +10 per booking
@@ -158,7 +158,7 @@ export async function PUT(request) {
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     if (booking.userId !== session.user.id) return NextResponse.json({ error: 'Unauthorized to modify this booking' }, { status: 403 });
 
-    const existing = await Booking.findOne({ gymId: booking.gymId, date: newDate, timeSlot: newTimeSlot, userId: session.user.id, status: 'upcoming' });
+    const existing = await Booking.findOne({ venueId: booking.venueId, date: newDate, timeSlot: newTimeSlot, userId: session.user.id, status: 'upcoming' });
     if (existing) {
       return NextResponse.json({ error: 'You already booked this new slot' }, { status: 400 });
     }
@@ -203,7 +203,7 @@ export async function DELETE(request) {
       userId: session.user.id,
       type: 'credit',
       amount: booking.price,
-      description: `Refund for cancelled session at ${booking.gymName}`
+      description: `Refund for cancelled session at ${booking.venueName}`
     });
 
     return NextResponse.json({ message: 'Booking cancelled' });

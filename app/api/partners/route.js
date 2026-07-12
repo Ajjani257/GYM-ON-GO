@@ -7,10 +7,10 @@ export async function POST(request) {
   try {
     await dbConnect();
     const body = await request.json();
-    const { gymName, ownerName, email, phone, city, address, pincode, mapsLink, website, operatingHours, amenities, equipment } = body;
+    const { venueName, ownerName, email, phone, city, address, pincode, mapsLink, website, operatingHours, amenities, equipment } = body;
 
-    if (!gymName || !ownerName || !email || !phone || !city || !address || !pincode || !operatingHours) {
-      return NextResponse.json({ error: 'All required fields (Gym Name, Owner Name, Email, Phone, City, Address, Pincode, Operating Hours) must be filled' }, { status: 400 });
+    if (!venueName || !ownerName || !email || !phone || !city || !address || !pincode || !operatingHours) {
+      return NextResponse.json({ error: 'All required fields (Venue Name, Owner Name, Email, Phone, City, Address, Pincode, Operating Hours) must be filled' }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,7 +24,7 @@ export async function POST(request) {
     }
 
     const application = await Partner.create({ 
-      gymName, 
+      venueName, 
       ownerName, 
       email, 
       phone, 
@@ -48,21 +48,21 @@ export async function POST(request) {
       ? equipment.map(e => `<span class="badge">${e}</span>`).join('')
       : '<span style="color: #94a3b8; font-size: 14px;">None specified</span>';
 
-    // 1. Send email to Gym Owner
-    const ownerSubject = `Clickongo Partner Network – Application Received (${gymName})`;
-    const ownerBody = `Hi ${ownerName},\n\nThank you for submitting your application to register "${gymName}" in the Clickongo network. We have successfully received your details!\n\nHere is a summary of the information you submitted:\n- Gym Name: ${gymName}\n- Physical Address: ${address}, ${city} - ${pincode}\n- Operating Hours: ${operatingHours}\n- Phone: ${phone}\n- Website/Social: ${website || 'N/A'}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n\nWhat happens next:\n1. Virtual Verification: Our team will review your digital presence and location coordinates.\n2. Verification Check: A representative will contact you at ${phone} to schedule a quick on-site visit to inspect amenities, gym ambience, and safety standards.\n3. Account Activation: Once verified, we will generate your live profile and email your secure Partner Dashboard credentials.\n\nYour Registration Reference Code: ${refCode}\n\nBest regards,\nClickongo Onboarding Team`;
+    // 1. Send email to Venue Owner
+    const ownerSubject = `Clickongo Partner Network – Application Received (${venueName})`;
+    const ownerBody = `Hi ${ownerName},\n\nThank you for submitting your application to register "${venueName}" in the Clickongo network. We have successfully received your details!\n\nHere is a summary of the information you submitted:\n- Venue Name: ${venueName}\n- Physical Address: ${address}, ${city} - ${pincode}\n- Operating Hours: ${operatingHours}\n- Phone: ${phone}\n- Website/Social: ${website || 'N/A'}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n\nWhat happens next:\n1. Virtual Verification: Our team will review your digital presence and location coordinates.\n2. Verification Check: A representative will contact you at ${phone} to schedule a quick on-site visit to inspect amenities, gym ambience, and safety standards.\n3. Account Activation: Once verified, we will generate your live profile and email your secure Partner Dashboard credentials.\n\nYour Registration Reference Code: ${refCode}\n\nBest regards,\nClickongo Onboarding Team`;
 
     const ownerHtml = getEmailHtmlTemplate({
       title: ownerSubject,
       contentHtml: `
         <h1>Hello ${ownerName},</h1>
-        <p>Thank you for submitting your application to join the Clickongo Partner Network. We are excited about the possibility of partnering with <strong>${gymName}</strong>.</p>
+        <p>Thank you for submitting your application to join the Clickongo Partner Network. We are excited about the possibility of partnering with <strong>${venueName}</strong>.</p>
         <p>Our onboarding team has received your registration details. Here is a summary of the information you submitted:</p>
         
         <table class="details-table">
           <tr>
-            <td class="details-label">Gym Name</td>
-            <td class="details-value"><strong>${gymName}</strong></td>
+            <td class="details-label">Venue Name</td>
+            <td class="details-value"><strong>${venueName}</strong></td>
           </tr>
           <tr>
             <td class="details-label">Physical Address</td>
@@ -110,13 +110,13 @@ export async function POST(request) {
     });
 
     // 2. Send email to Admin
-    const adminSubject = `🚨 Action Required: New Partner Application - ${gymName}`;
-    const adminBody = `Hello Admin,\n\nA new gym has applied to register on the Clickongo platform.\n\nGym Details:\n- Gym Name: ${gymName}\n- Owner: ${ownerName}\n- Email: ${email}\n- Phone: ${phone}\n- Location: ${address}, ${city} - ${pincode}\n- Maps Link: ${mapsLink || 'Not provided'}\n- Website: ${website || 'Not provided'}\n- Operating Hours: ${operatingHours}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n- Application ID: ${application._id}\n- Reference Code: ${refCode}\n\nRequired Action:\n1. Review the online maps and social links to run a quick virtual validation.\n2. Assign a team member to contact ${ownerName} at ${phone} and schedule a physical verification check (ambience, amenities, genuinity).\n3. Once verified, log into the Platform Admin Dashboard to complete their profile setup and approve their account.\n\nReview application here: http://localhost:3000/admin`;
+    const adminSubject = `🚨 Action Required: New Partner Application - ${venueName}`;
+    const adminBody = `Hello Admin,\n\nA new gym has applied to register on the Clickongo platform.\n\nGym Details:\n- Venue Name: ${venueName}\n- Owner: ${ownerName}\n- Email: ${email}\n- Phone: ${phone}\n- Location: ${address}, ${city} - ${pincode}\n- Maps Link: ${mapsLink || 'Not provided'}\n- Website: ${website || 'Not provided'}\n- Operating Hours: ${operatingHours}\n- Amenities: ${amenities?.join(', ') || 'None'}\n- Equipment: ${equipment?.join(', ') || 'None'}\n- Application ID: ${application._id}\n- Reference Code: ${refCode}\n\nRequired Action:\n1. Review the online maps and social links to run a quick virtual validation.\n2. Assign a team member to contact ${ownerName} at ${phone} and schedule a physical verification check (ambience, amenities, genuinity).\n3. Once verified, log into the Platform Admin Dashboard to complete their profile setup and approve their account.\n\nReview application here: http://localhost:3000/admin`;
 
     const adminHtml = getEmailHtmlTemplate({
       title: adminSubject,
       contentHtml: `
-        <h1 style="color: #0f172a;">New Gym Registration Pending Review</h1>
+        <h1 style="color: #0f172a;">New Venue Registration Pending Review</h1>
         <p>A new partner has submitted an application to join the Clickongo network. Please coordinate virtual verification and schedule the physical check.</p>
         
         <div class="highlight-box" style="border-left-color: #ff3e00; background-color: #fff8f6;">
@@ -130,8 +130,8 @@ export async function POST(request) {
         
         <table class="details-table">
           <tr>
-            <td class="details-label">Gym Name</td>
-            <td class="details-value"><strong>${gymName}</strong></td>
+            <td class="details-label">Venue Name</td>
+            <td class="details-value"><strong>${venueName}</strong></td>
           </tr>
           <tr>
             <td class="details-label">Owner Name</td>

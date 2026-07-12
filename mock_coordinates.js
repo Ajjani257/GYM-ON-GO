@@ -12,8 +12,8 @@ const GymSchema = new mongoose.Schema({
     lat: Number,
     lng: Number
   }
-}, { collection: 'gyms', strict: false });
-const Gym = mongoose.models.Gym || mongoose.model('Gym', GymSchema);
+}, { collection: 'venues', strict: false });
+const Venue = mongoose.models.Venue || mongoose.model('Venue', GymSchema);
 
 // Approximate city centers
 const CITY_CENTERS = {
@@ -24,9 +24,9 @@ const CITY_CENTERS = {
 };
 
 async function migrate() {
-  const gyms = await Gym.find();
+  const venues = await Venue.find();
   
-  for (const gym of gyms) {
+  for (const gym of venues) {
     let center = CITY_CENTERS[gym.city];
     if (!center) {
       // Default to Mumbai if city not found

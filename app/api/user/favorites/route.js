@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
-import Gym from '@/models/Gym'; // needed for population
+import Venue from '@/models/Venue'; // needed for population
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
@@ -29,19 +29,19 @@ export async function POST(request) {
     if (!session || !session.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await dbConnect();
-    const { gymId } = await request.json();
+    const { venueId } = await request.json();
 
-    if (!gymId) return NextResponse.json({ error: 'gymId required' }, { status: 400 });
+    if (!venueId) return NextResponse.json({ error: 'venueId required' }, { status: 400 });
 
     const user = await User.findById(session.user.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    // Validate and convert gymId to ObjectId for proper comparison
-    if (!mongoose.Types.ObjectId.isValid(gymId)) {
+    // Validate and convert venueId to ObjectId for proper comparison
+    if (!mongoose.Types.ObjectId.isValid(venueId)) {
       return NextResponse.json({ error: 'Invalid gym ID' }, { status: 400 });
     }
 
-    const gymObjectId = new mongoose.Types.ObjectId(gymId);
+    const gymObjectId = new mongoose.Types.ObjectId(venueId);
     const isFav = user.favoriteGyms.some(id => id.toString() === gymObjectId.toString());
     
     if (isFav) {

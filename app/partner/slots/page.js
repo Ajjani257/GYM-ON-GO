@@ -52,7 +52,7 @@ export default function PartnerSlots() {
   useEffect(() => {
     async function loadGym() {
       try {
-        const res = await fetch('/api/partner/gym', { cache: 'no-store' });
+        const res = await fetch('/api/partner/venue', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setGym(data);
@@ -72,7 +72,7 @@ export default function PartnerSlots() {
   async function handleSave() {
     setSaving(true);
     try {
-      const res = await fetch('/api/partner/gym', {
+      const res = await fetch('/api/partner/venue', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,7 +85,7 @@ export default function PartnerSlots() {
       if (res.ok) {
         const updated = await res.json();
         setGym(updated);
-        addToast('Gym settings saved successfully!', 'success');
+        addToast('Venue settings saved successfully!', 'success');
       } else {
         const err = await res.json();
         addToast(err.error || 'Failed to save settings', 'error');
@@ -184,7 +184,7 @@ export default function PartnerSlots() {
   }
 
   if (loading) return <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading slots setup...</div>;
-  if (!gym) return <div style={{ color: 'var(--red)', textAlign: 'center', padding: '40px' }}>Failed to retrieve Gym Settings.</div>;
+  if (!gym) return <div style={{ color: 'var(--red)', textAlign: 'center', padding: '40px' }}>Failed to retrieve Venue Settings.</div>;
 
   return (
     <motion.div initial="hidden" animate="visible" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

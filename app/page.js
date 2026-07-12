@@ -59,7 +59,7 @@ const DEMO_SCREENS = [
           <div style={{ fontSize: '1.2rem', fontWeight: 900, lineHeight: 1.1, color: '#fff' }}>Train on<br /><span style={{ color: '#ff3e00' }}>Your Terms</span></div>
           <div style={{ fontSize: '0.62rem', color: '#a0aab8', lineHeight: 1.5 }}>Book gym sessions by the hour. No membership. No lock-in.</div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <div style={{ background: '#ff3e00', borderRadius: 999, padding: '6px 12px', fontSize: '0.6rem', fontWeight: 800, color: '#fff' }}>Find Gyms →</div>
+            <div style={{ background: '#ff3e00', borderRadius: 999, padding: '6px 12px', fontSize: '0.6rem', fontWeight: 800, color: '#fff' }}>Find Venues →</div>
             <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '6px 10px', fontSize: '0.6rem', fontWeight: 700, color: '#fff' }}>See how it works</div>
           </div>
         </div>
@@ -74,22 +74,22 @@ const DEMO_SCREENS = [
   },
   {
     id: 'explore',
-    label: '🔍 Explore Gyms',
-    desc: 'Filter by city, price, equipment. Compare up to 3 gyms side-by-side.',
+    label: '🔍 Explore Venues',
+    desc: 'Filter by city, price, equipment. Compare up to 3 venues side-by-side.',
     bg: 'linear-gradient(160deg, #0d0d0f 0%, #0a0a1a 100%)',
     render: () => (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '16px', gap: 10 }}>
-        <div style={{ fontWeight: 800, fontSize: '0.75rem' }}>Find Gyms</div>
+        <div style={{ fontWeight: 800, fontSize: '0.75rem' }}>Find Venues</div>
         {/* Search */}
         <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <Search size={11} color="#a0aab8" />
-          <span style={{ fontSize: '0.6rem', color: '#a0aab8' }}>Search gyms near you...</span>
+          <span style={{ fontSize: '0.6rem', color: '#a0aab8' }}>Search venues near you...</span>
         </div>
         {/* Compare hint */}
         <div style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.2)', borderRadius: 8, padding: '6px 8px', fontSize: '0.55rem', color: '#00f0ff', fontWeight: 600 }}>
-          <GitCompare size={10} style={{ display: 'inline', marginRight: 4 }} />Compare gyms side by side →
+          <GitCompare size={10} style={{ display: 'inline', marginRight: 4 }} />Compare venues side by side →
         </div>
-        {/* Gym cards */}
+        {/* Venue cards */}
         {[
           { name: 'Stark Fitness', area: 'Koramangala', price: 120, rating: 4.8, color: '#ff3e00' },
           { name: 'Iron Paradise', area: 'Indiranagar', price: 90, rating: 4.6, color: '#00f0ff' },
@@ -116,13 +116,13 @@ const DEMO_SCREENS = [
   },
   {
     id: 'compare',
-    label: '⚖️ Compare Gyms',
+    label: '⚖️ Compare Venues',
     desc: 'Side-by-side comparison of price, amenities, rating & equipment.',
     bg: 'linear-gradient(160deg, #0d0d0f 0%, #001a1a 100%)',
     render: () => (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '16px', gap: 10 }}>
         <div style={{ fontWeight: 800, fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <GitCompare size={13} color="#00f0ff" /> Gym Comparison
+          <GitCompare size={13} color="#00f0ff" /> Venue Comparison
         </div>
         {/* Column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: 6 }}>
@@ -154,12 +154,12 @@ const DEMO_SCREENS = [
   },
   {
     id: 'gymdetail',
-    label: '🏋️ Gym Detail',
+    label: '🏋️ Venue Detail',
     desc: 'View amenities, ratings, and pick your preferred hour slot.',
     bg: 'linear-gradient(160deg, #0d0d0f 0%, #1a0500 100%)',
     render: () => (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Gym hero img */}
+        {/* Venue hero img */}
         <div style={{ height: 90, background: 'linear-gradient(135deg, rgba(255,62,0,0.4), rgba(0,0,0,0.8))', display: 'flex', alignItems: 'flex-end', padding: '8px 12px', position: 'relative' }}>
           <Dumbbell size={28} color="rgba(255,255,255,0.15)" style={{ position: 'absolute', right: 12, top: 12 }} />
           <div>
@@ -389,7 +389,7 @@ export default function Home() {
     { 
       icon: <MapPin size={24} />, 
       num: '01', 
-      title: 'Locate Your Gym', 
+      title: 'Locate Your Venue', 
       desc: 'Explore premium local workout spaces. Compare by price, equipment lists, and member reviews.' 
     },
     { 
@@ -448,12 +448,12 @@ export default function Home() {
               TRAIN ON YOUR <span style={{ color: 'var(--red)' }}>TERMS.</span>
             </h1>
             <p className="hero-sub" style={{ margin: '0 0 40px 0', maxWidth: '540px' }}>
-              Zero memberships. Billed by the hour. Clean premium gyms nearby, unlocked with a single QR code.
+              Zero memberships. Billed by the hour. Clean premium venues nearby, unlocked with a single QR code.
             </p>
             <div className="hero-ctas">
-              <Link href="/gyms">
+              <Link href="/venues">
                 <button className="btn-primary" style={{ padding: '0 40px' }}>
-                  Unlock Nearby Gyms <ArrowRight size={20} />
+                  Unlock Nearby Venues <ArrowRight size={20} />
                 </button>
               </Link>
             </div>

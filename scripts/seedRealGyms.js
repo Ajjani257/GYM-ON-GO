@@ -25,7 +25,7 @@ const GymSchema = new mongoose.Schema({
   priority: { type: Number, default: 0 },
 }, { timestamps: true });
 
-const Gym = mongoose.models.Gym || mongoose.model('Gym', GymSchema);
+const Venue = mongoose.models.Venue || mongoose.model('Venue', GymSchema);
 
 const realGyms = [
   // AHMEDABAD
@@ -60,7 +60,7 @@ const realGyms = [
     equipment: ['Treadmill', 'Dumbbells', 'Bench Press', 'Leg Press'],
   },
   {
-    name: 'Appex Gym',
+    name: 'Appex Venue',
     address: 'Bapunagar Main Road',
     city: 'Ahmedabad',
     description: 'A hardcore, neighborhood-focused gym frequently highlighted for its strong reputation among local lifters.',
@@ -92,7 +92,7 @@ const realGyms = [
     equipment: ['Treadmill', 'Squat Rack', 'Dumbbells', 'Bench Press', 'Rowing Machine', 'Kettlebells'],
   },
   {
-    name: 'Gold\'s Gym Lower Parel',
+    name: 'Gold\'s Venue Lower Parel',
     address: 'One World Center, A-2 Tower 1, 3rd Floor, Lower Parel',
     city: 'Mumbai',
     description: 'A globally recognized brand offering professional training programs and comprehensive fitness equipment.',
@@ -107,7 +107,7 @@ const realGyms = [
     equipment: ['Treadmill', 'Elliptical', 'Smith Machine', 'Dumbbells', 'Bench Press'],
   },
   {
-    name: 'Waves Gym',
+    name: 'Waves Venue',
     address: 'Veera Desai Area, Andheri West',
     city: 'Mumbai',
     description: 'A highly-rated local favorite in the Western Suburbs with an energetic environment and great equipment.',
@@ -192,20 +192,20 @@ async function seed() {
     await mongoose.connect(uri);
     console.log('Connected to MongoDB');
 
-    await Gym.deleteMany({});
-    console.log('Cleared existing dummy gyms.');
+    await Venue.deleteMany({});
+    console.log('Cleared existing dummy venues.');
 
     const gymsToInsert = realGyms.map(gym => ({
       ...gym,
       slots: standardSlots,
     }));
 
-    await Gym.insertMany(gymsToInsert);
-    console.log(`Successfully seeded ${realGyms.length} real gyms!`);
+    await Venue.insertMany(gymsToInsert);
+    console.log(`Successfully seeded ${realGyms.length} real venues!`);
     
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding gyms:', error);
+    console.error('Error seeding venues:', error);
     process.exit(1);
   }
 }

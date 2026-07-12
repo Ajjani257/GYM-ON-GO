@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 const SEED_BLOGS = [
   // ── 1 ─────────────────────────────────────────────────────────────
   {
-    title: 'How to Maximize Your 1-Hour Gym Session',
+    title: 'How to Maximize Your 1-Hour Venue Session',
     slug: 'maximize-1-hour-gym-session',
     excerpt: 'Pressed for time? A laser-focused 60-minute session beats a sloppy two-hour workout every time. Here\'s the exact framework used by strength coaches.',
     content: `### The 60-Minute Efficiency Rule
@@ -47,12 +47,12 @@ Never add an exercise without removing one. Most gym sessions fail because they 
 
   // ── 2 ─────────────────────────────────────────────────────────────
   {
-    title: 'Hourly Gym Booking vs Monthly Contracts: The Real Math',
-    slug: 'hourly-vs-monthly-gyms-india',
+    title: 'Hourly Venue Booking vs Monthly Contracts: The Real Math',
+    slug: 'hourly-vs-monthly-venues-india',
     excerpt: 'With India\'s gym membership penetration under 1%, flexible hourly booking is changing who gets to train — and saving serious money for those who do.',
     content: `### The Subscription Trap
 
-Gym contracts are engineered around a predictable pattern: most members stop attending within 6 weeks, yet continue paying for 10 more months out of guilt or forgetfulness. This is not an accident — it is the business model.
+Venue contracts are engineered around a predictable pattern: most members stop attending within 6 weeks, yet continue paying for 10 more months out of guilt or forgetfulness. This is not an accident — it is the business model.
 
 ### The Financial Reality
 
@@ -64,7 +64,7 @@ Across a year, the typical monthly-contract gym-goer pays for roughly 48 session
 
 Corporate professionals in Bengaluru, Mumbai, or Gurugram often work unpredictable 10–12 hour days. A monthly membership signed in January becomes a burden by March as project deadlines compound.
 
-Frequent travelers — whether sales professionals or startup founders — spend up to 12 days a month away from home. An hourly model lets them book gyms in whichever city they land in, paying only for sessions they actually use.
+Frequent travelers — whether sales professionals or startup founders — spend up to 12 days a month away from home. An hourly model lets them book venues in whichever city they land in, paying only for sessions they actually use.
 
 Students preparing for competitive exams train hard in phases. Paying per session perfectly matches their sporadic but intense training windows.
 
@@ -229,7 +229,7 @@ The goal is to train hard enough to stimulate growth, then recover completely en
     excerpt: '12-hour workdays, 2-hour commutes, and back-to-back client calls. Here\'s how professionals in Bengaluru, Mumbai, and Delhi are staying fit without sacrificing their careers.',
     content: `### The Urban Indian Fitness Crisis
 
-Professionals in Indian Tier-1 cities average over 11 working hours per day, with an additional 90-minute commute. Gym attendance drops 60% within 3 months of joining for this demographic — not because of laziness, but because rigid gym timetables simply do not fit irregular hours.
+Professionals in Indian Tier-1 cities average over 11 working hours per day, with an additional 90-minute commute. Venue attendance drops 60% within 3 months of joining for this demographic — not because of laziness, but because rigid gym timetables simply do not fit irregular hours.
 
 ### Strategy 1: Micro-Workout Accumulation
 

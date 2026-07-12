@@ -77,7 +77,7 @@ function DashboardContent() {
   const [walletModal, setWalletModal] = useState(false);
   const [fundAmount, setFundAmount] = useState(1000);
   
-  const [reviewModal, setReviewModal] = useState(null); // stores gymId for review
+  const [reviewModal, setReviewModal] = useState(null); // stores venueId for review
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   
@@ -151,7 +151,7 @@ function DashboardContent() {
     const res = await fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: session.user.id, gymId: reviewModal, rating: reviewRating, comment: reviewComment })
+      body: JSON.stringify({ userId: session.user.id, venueId: reviewModal, rating: reviewRating, comment: reviewComment })
     });
     const data = await res.json();
     if (res.ok) {
@@ -348,23 +348,23 @@ function DashboardContent() {
         <div className="tabs" style={{ marginBottom: 0 }}>
           <button className={`tab ${tab === 'upcoming' ? 'active' : ''}`} onClick={() => setTab('upcoming')}>Upcoming ({upcoming.length})</button>
           <button className={`tab ${tab === 'past' ? 'active' : ''}`} onClick={() => setTab('past')}>Past ({past.length})</button>
-          <button className={`tab ${tab === 'saved' ? 'active' : ''}`} onClick={() => setTab('saved')}>Gym Wishlist ({savedGyms.length})</button>
+          <button className={`tab ${tab === 'saved' ? 'active' : ''}`} onClick={() => setTab('saved')}>Venue Wishlist ({savedGyms.length})</button>
           <button className={`tab ${tab === 'refer' ? 'active' : ''}`} onClick={() => setTab('refer')}>Refer & Earn</button>
         </div>
-        <button className="btn-primary" onClick={() => router.push('/gyms')} style={{ padding: '10px 20px', fontSize: '0.95rem', borderRadius: '12px' }}>Explore more gyms</button>
+        <button className="btn-primary" onClick={() => router.push('/venues')} style={{ padding: '10px 20px', fontSize: '0.95rem', borderRadius: '12px' }}>Explore more venues</button>
       </div>
 
       {tab === 'saved' ? (
-        <div className="gyms-grid" style={{gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))'}}>
+        <div className="venues-grid" style={{gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))'}}>
           {savedGyms.length === 0 ? (
             <div className="empty-state" style={{gridColumn:'1 / -1'}}>
               <Bookmark size={48} />
-              <h3>Gym Wishlist is empty</h3>
+              <h3>Venue Wishlist is empty</h3>
               <p>Click the heart icon on any gym to add it to your wishlist</p>
             </div>
           ) : (
             savedGyms.map(gym => (
-              <Link href={`/gyms/${gym._id}`} key={gym._id}>
+              <Link href={`/venues/${gym._id}`} key={gym._id}>
                 <div className="gym-card">
                   <div className="gym-card-img" style={{height:160}}>
                     <img src={gym.image || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80'} alt={gym.name} />
@@ -444,7 +444,7 @@ function DashboardContent() {
               </a>
               {/* Email */}
               <a
-                href={`mailto:?subject=${encodeURIComponent('Try Clickongo – Book gyms by the hour!')}&body=${encodeURIComponent(`Hey!\n\nI've been using Clickongo to book gym sessions by the hour — no subscriptions, just pay when you go.\n\nUse my referral code ${referralCode} when you sign up and get ₹50 free credits!\n\nSign up here: https://clickongo.vercel.app/auth?ref=${referralCode}\n\nSee you at the gym! 💪`)}`}
+                href={`mailto:?subject=${encodeURIComponent('Try Clickongo – Book venues by the hour!')}&body=${encodeURIComponent(`Hey!\n\nI've been using Clickongo to book gym sessions by the hour — no subscriptions, just pay when you go.\n\nUse my referral code ${referralCode} when you sign up and get ₹50 free credits!\n\nSign up here: https://clickongo.vercel.app/auth?ref=${referralCode}\n\nSee you at the gym! 💪`)}`}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-alt)', color: 'var(--text)', border: '1px solid var(--line)', padding: '10px 18px', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontSize: '0.88rem' }}
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -517,16 +517,16 @@ function DashboardContent() {
               <CalendarX2 size={48} />
               <h3>No {tab} bookings</h3>
               <p>Ready to start your fitness journey?</p>
-              <button className="btn-primary" onClick={() => router.push('/gyms')}>Find gyms</button>
+              <button className="btn-primary" onClick={() => router.push('/venues')}>Find venues</button>
             </div>
           ) : (
             (tab === 'upcoming' ? upcoming : past).map(b => (
               <div className="booking-item" key={b._id}>
                 <div className="booking-item-info">
-                  <Link href={`/gyms/${b.gymId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                    <h4 style={{ cursor: 'pointer' }}>{b.gymName}</h4>
+                  <Link href={`/venues/${b.venueId}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <h4 style={{ cursor: 'pointer' }}>{b.venueName}</h4>
                   </Link>
-                  <p>{b.gymAddress} • {new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', {month:'short',day:'numeric'})} • {b.timeSlot}</p>
+                  <p>{b.venueAddress} • {new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', {month:'short',day:'numeric'})} • {b.timeSlot}</p>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',justifyContent:'flex-end'}}>
                   <span className={`status-badge status-${b.status}`}>{b.status.toUpperCase()}</span>
@@ -542,7 +542,7 @@ function DashboardContent() {
                     </>
                   )}
                   {b.status === 'completed' && (
-                    <button className="btn-outline" style={{padding:'6px 12px'}} onClick={() => setReviewModal(b.gymId)}>Leave Review</button>
+                    <button className="btn-outline" style={{padding:'6px 12px'}} onClick={() => setReviewModal(b.venueId)}>Leave Review</button>
                   )}
                 </div>
               </div>
@@ -593,7 +593,7 @@ function DashboardContent() {
         <div className="modal-overlay" onClick={() => setRescheduleModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <h2>Reschedule Booking</h2>
-            <p className="sub">Select a new date and time for {rescheduleModal.gymName}</p>
+            <p className="sub">Select a new date and time for {rescheduleModal.venueName}</p>
             <input type="date" className="auth-input" min={getLocalDateString(new Date())} value={newDate} onChange={e => setNewDate(e.target.value)} style={{marginBottom:16}} />
             <select className="auth-input" value={newTime} onChange={e => setNewTime(e.target.value)}>
               <option value="">Select Time Slot</option>

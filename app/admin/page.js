@@ -52,7 +52,7 @@ export default function AdminDashboard() {
       const emailData = await emailRes.json();
       if (emailRes.ok) setEmails(emailData);
 
-      const gymRes = await fetch('/api/gyms', { cache: 'no-store' });
+      const gymRes = await fetch('/api/venues', { cache: 'no-store' });
       const gymData = await gymRes.json();
       if (gymRes.ok) setLiveGyms(gymData);
     } catch (err) {
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (res.ok) {
         setOnboardResult(data.credentials);
-        addToast('Gym onboarding completed successfully!', 'success');
+        addToast('Venue onboarding completed successfully!', 'success');
         setOnboardApp(null);
         loadAdminData();
       } else {
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
     { label: 'Dumbbells & Cardio Hall', url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80' },
     { label: 'Serene Yoga Studio Floor', url: 'https://images.unsplash.com/photo-1588286840104-8957b019727f?w=800&q=80' },
     { label: 'Heavy Olympic Platform', url: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80' },
-    { label: 'Treadmills Row Gym', url: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=800&q=80' }
+    { label: 'Treadmills Row Venue', url: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=800&q=80' }
   ];
 
   return (
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
         <div className="dash-stat">
           <div className="dash-stat-icon green"><CheckCircle size={20} /></div>
           <div className="dash-stat-val">{approvedApps.length}</div>
-          <div className="dash-stat-lbl">Active Partner Gyms</div>
+          <div className="dash-stat-lbl">Active Partner Venues</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-icon orange"><Users size={20} /></div>
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
           {/* APPLICATIONS CARD */}
           <div className="detail-card" style={{ padding: '28px', minHeight: '480px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Gym Registration Applications</h2>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Venue Registration Applications</h2>
             {/* Filter buttons */}
             <div style={{ display: 'flex', gap: '8px', background: 'var(--surface-alt)', padding: '4px', borderRadius: '8px', border: '1px solid var(--line)' }}>
               {['all', 'pending', 'approved', 'rejected'].map(f => (
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span className={`status-badge ${badgeColor}`} style={{ width: 'fit-content', textTransform: 'capitalize', marginBottom: '4px' }}>{app.status}</span>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{app.gymName}</h3>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{app.venueName}</h3>
                         <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
                           Owner: <strong>{app.ownerName}</strong> • {app.email}
                         </p>
@@ -442,11 +442,11 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Live Gym Directory Card */}
+        {/* Live Venue Directory Card */}
         <div className="detail-card" style={{ padding: '28px' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '20px' }}>Live Gym Directory</h2>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '20px' }}>Live Venue Directory</h2>
           {liveGyms.length === 0 ? (
-            <span style={{ color: 'var(--muted)', display: 'block', padding: '20px', textAlign: 'center' }}>No live gyms found.</span>
+            <span style={{ color: 'var(--muted)', display: 'block', padding: '20px', textAlign: 'center' }}>No live venues found.</span>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {liveGyms.map(gym => (
@@ -475,7 +475,7 @@ export default function AdminDashboard() {
                           return;
                         }
                         try {
-                          const res = await fetch(`/api/admin/gyms/${gym._id}`, {
+                          const res = await fetch(`/api/admin/venues/${gym._id}`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ priority: priorityNum })
@@ -500,9 +500,9 @@ export default function AdminDashboard() {
                       onClick={async () => {
                         if (!window.confirm(`Are you sure you want to remove ${gym.name} from the Clickongo network? This action is permanent and will remove it from the customer explore page.`)) return;
                         try {
-                          const res = await fetch(`/api/gyms/${gym._id}`, { method: 'DELETE' });
+                          const res = await fetch(`/api/venues/${gym._id}`, { method: 'DELETE' });
                           if (res.ok) {
-                            addToast('Gym removed successfully!', 'success');
+                            addToast('Venue removed successfully!', 'success');
                             loadAdminData();
                           } else {
                             const err = await res.json();
@@ -568,9 +568,9 @@ export default function AdminDashboard() {
               style={{ maxWidth: '580px', width: '100%', padding: '32px', maxHeight: '90vh', overflowY: 'auto' }}
             >
               <div style={{ borderBottom: '1px solid var(--line)', paddingBottom: '16px', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Verify & Onboard Gym</h3>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Verify & Onboard Venue</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-                  Fill in verified details for <strong style={{ color: 'var(--text)' }}>{onboardApp.gymName}</strong> to publish them to explore section.
+                  Fill in verified details for <strong style={{ color: 'var(--text)' }}>{onboardApp.venueName}</strong> to publish them to explore section.
                 </p>
               </div>
 
@@ -584,7 +584,7 @@ export default function AdminDashboard() {
                     required 
                     value={address} 
                     onChange={e => setAddress(e.target.value)} 
-                    placeholder="123 Gym Road, Satellite Area"
+                    placeholder="123 Venue Road, Satellite Area"
                     style={{ marginTop: '6px' }}
                   />
                 </div>
@@ -632,7 +632,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="form-group">
-                  <label>Gym Hero Photo</label>
+                  <label>Venue Hero Photo</label>
                   <select 
                     className="auth-input" 
                     value={image} 
@@ -767,9 +767,9 @@ export default function AdminDashboard() {
               style={{ maxWidth: '480px', width: '100%', padding: '32px' }}
             >
               <div style={{ borderBottom: '1px solid var(--line)', paddingBottom: '16px', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--red)' }}>Reject Gym Application</h3>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--red)' }}>Reject Venue Application</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-                  Please provide a reason for rejecting <strong style={{ color: 'var(--text)' }}>{rejectingApp.gymName}</strong>. This will be sent to the owner.
+                  Please provide a reason for rejecting <strong style={{ color: 'var(--text)' }}>{rejectingApp.venueName}</strong>. This will be sent to the owner.
                 </p>
               </div>
               <form onSubmit={handleRejectSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

@@ -156,7 +156,7 @@ input,select{font-family:var(--font-body);}
 .search-input{position:relative;flex:1;min-width:300px;}
 .search-input i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);}
 .search-input input{padding-left:40px;width:100%;}
-.gyms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:32px 0 80px;}
+.venues-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:32px 0 80px;}
 .gym-card{background:var(--card);border:1px solid var(--card-border);border-radius:24px;overflow:hidden;cursor:pointer;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:var(--shadow);}
 .gym-card:hover{border-color:var(--red);transform:translateY(-6px);box-shadow:var(--shadow-hover);}
 .gym-card-img{position:relative;height:240px;overflow:hidden;background:var(--surface-alt);}
@@ -404,7 +404,7 @@ input,select{font-family:var(--font-body);}
   .steps-grid{grid-template-columns:1fr;}
   .cta-box{flex-direction:column;text-align:center;padding:40px 24px;}
   
-  .gyms-grid{grid-template-columns:1fr;}
+  .venues-grid{grid-template-columns:1fr;}
   .detail-layout{grid-template-columns:1fr;}
   .admin-layout{grid-template-columns:1fr;}
   .auth-layout{grid-template-columns:1fr;}
@@ -479,7 +479,7 @@ input,select{font-family:var(--font-body);}
   .filters-bar { flex-direction: column; align-items: stretch; padding: 16px 0; gap: 12px; }
   .filter-group input, .filter-group select { width: 100%; min-width: 0 !important; }
   .search-input { min-width: 0 !important; }
-  .gyms-grid { grid-template-columns: 1fr; gap: 20px; padding: 20px 0 60px; }
+  .venues-grid { grid-template-columns: 1fr; gap: 20px; padding: 20px 0 60px; }
   .gym-card-img { height: 200px; }
   .gym-card-body { padding: 16px; }
   .gym-card-name { font-size: 1.15rem; }

@@ -13,7 +13,7 @@ const iconMap = {
 
 export default function Partners() {
   const [submitted, setSubmitted] = useState(false);
-  const [gymName, setGymName] = useState('');
+  const [venueName, setGymName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -125,7 +125,7 @@ export default function Partners() {
 
   const validateStep = (s) => {
     if (s === 1) {
-      if (!gymName.trim() || !ownerName.trim() || !email.trim() || !phone.trim()) {
+      if (!venueName.trim() || !ownerName.trim() || !email.trim() || !phone.trim()) {
         addToast('Please fill in all basic contact details.', 'error');
         return false;
       }
@@ -185,7 +185,7 @@ export default function Partners() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          gymName, 
+          venueName, 
           ownerName, 
           email, 
           phone, 
@@ -273,7 +273,7 @@ export default function Partners() {
       <section className="partner-form-section">
         {!submitted ? (
           <>
-            <h2>Register Your Gym</h2>
+            <h2>Register Your Venue</h2>
             <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 24 }}>
               Partner with Clickongo to list your gym, open slots, and grow your revenue.
             </p>
@@ -316,8 +316,8 @@ export default function Partners() {
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 800, borderBottom: '1px solid var(--line)', paddingBottom: '8px', marginBottom: '8px' }}>Step 1: Contact Details</h3>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Gym Name</label>
-                      <input type="text" maxLength={100} placeholder="Elite Fitness Club" required value={gymName} onChange={handleGymNameChange} />
+                      <label>Venue Name</label>
+                      <input type="text" maxLength={100} placeholder="Elite Fitness Club" required value={venueName} onChange={handleGymNameChange} />
                     </div>
                     <div className="form-group">
                       <label>Owner Name</label>
@@ -500,8 +500,8 @@ export default function Partners() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.9rem' }}>
                 <div>
-                  <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.78rem' }}>Gym Name</span>
-                  <strong>{gymName}</strong>
+                  <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.78rem' }}>Venue Name</span>
+                  <strong>{venueName}</strong>
                 </div>
                 <div>
                   <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.78rem' }}>Owner Name</span>

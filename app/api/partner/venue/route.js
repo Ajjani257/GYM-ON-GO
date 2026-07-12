@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/mongodb';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { NextResponse } from 'next/server';
@@ -14,11 +14,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let gym = await Gym.findOne({ ownerId: session.user.id });
+    let gym = await Venue.findOne({ ownerId: session.user.id });
     if (!gym) {
       // Auto-create a default gym profile so the dashboard has initial state
-      gym = await Gym.create({
-        name: 'Iron Temple Gym',
+      gym = await Venue.create({
+        name: 'Iron Temple Venue',
         address: 'Sector 5, HSR Layout',
         city: 'Bengaluru',
         description: 'Update your gym profile description, list certified equipment, select amenities, and define dynamic slots in settings.',
@@ -60,7 +60,7 @@ export async function PUT(request) {
     const body = await request.json();
     const { name, address, city, description, pricePerHour, hours, amenities, equipment, slots, pricingRules } = body;
 
-    const gym = await Gym.findOneAndUpdate(
+    const gym = await Venue.findOneAndUpdate(
       { ownerId: session.user.id },
       { 
         name, 
@@ -78,7 +78,7 @@ export async function PUT(request) {
     );
 
     if (!gym) {
-      return NextResponse.json({ error: 'Gym profile not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Venue profile not found' }, { status: 404 });
     }
 
     return NextResponse.json(gym);

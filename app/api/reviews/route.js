@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Review from '@/models/Review';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import User from '@/models/User';
 import Booking from '@/models/Booking';
 import { NextResponse } from 'next/server';
@@ -11,11 +11,11 @@ export async function GET(request) {
   try {
     await dbConnect();
     const { searchParams } = new URL(request.url);
-    const gymId = searchParams.get('gymId');
+    const venueId = searchParams.get('venueId');
 
-    if (!gymId) return NextResponse.json({ error: 'gymId required' }, { status: 400 });
+    if (!venueId) return NextResponse.json({ error: 'venueId required' }, { status: 400 });
 
-    const reviews = await Review.find({ gymId }).populate('userId', 'name').sort({ createdAt: -1 });
+    const reviews = await Review.find({ venueId }).populate('userId', 'name').sort({ createdAt: -1 });
     return NextResponse.json(reviews);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -28,39 +28,39 @@ export async function POST(request) {
     if (!session || !session.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await dbConnect();
-    const { gymId, rating, comment } = await request.json();
+    const { venueId, rating, comment } = await request.json();
 
-    if (!gymId || !rating || !comment) {
+    if (!venueId || !rating || !comment) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
     // 1. Check if the user has a completed booking at the gym (finished workout)
     const hasBooked = await Booking.findOne({
       userId: session.user.id,
-      gymId,
+      venueId,
       status: 'completed'
     });
 
     if (!hasBooked) {
-      return NextResponse.json({ error: 'You can only review gyms after you have completed a workout there.' }, { status: 403 });
+      return NextResponse.json({ error: 'You can only review venues after you have completed a workout there.' }, { status: 403 });
     }
 
     // 2. Prevent duplicate reviews by the same user for the same gym
     const existingReview = await Review.findOne({
       userId: session.user.id,
-      gymId
+      venueId
     });
 
     if (existingReview) {
       return NextResponse.json({ error: 'You have already reviewed this gym. You can edit your existing review instead.' }, { status: 400 });
     }
 
-    const review = await Review.create({ userId: session.user.id, gymId, rating, comment });
+    const review = await Review.create({ userId: session.user.id, venueId, rating, comment });
 
     // Update gym average rating
-    const gym = await Gym.findById(gymId);
+    const gym = await Venue.findById(venueId);
     if (gym) {
-      const allReviews = await Review.find({ gymId });
+      const allReviews = await Review.find({ venueId });
       const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
       gym.rating = Number((totalRating / allReviews.length).toFixed(1));
       gym.reviewCount = allReviews.length;
@@ -96,9 +96,9 @@ export async function PUT(request) {
     await review.save();
 
     // Update gym average rating
-    const gym = await Gym.findById(review.gymId);
+    const gym = await Venue.findById(review.venueId);
     if (gym) {
-      const allReviews = await Review.find({ gymId: review.gymId });
+      const allReviews = await Review.find({ venueId: review.venueId });
       const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
       gym.rating = Number((totalRating / allReviews.length).toFixed(1));
       gym.reviewCount = allReviews.length;
@@ -130,13 +130,13 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Review not found or unauthorized' }, { status: 404 });
     }
 
-    const gymId = review.gymId;
+    const venueId = review.venueId;
     await Review.deleteOne({ _id: reviewId });
 
     // Update gym average rating
-    const gym = await Gym.findById(gymId);
+    const gym = await Venue.findById(venueId);
     if (gym) {
-      const allReviews = await Review.find({ gymId });
+      const allReviews = await Review.find({ venueId });
       if (allReviews.length > 0) {
         const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
         gym.rating = Number((totalRating / allReviews.length).toFixed(1));

@@ -12,8 +12,8 @@ function NavLinksList({ session }) {
   const tab = searchParams.get('tab');
 
   const isHome = pathname === '/';
-  const isExplore = pathname.startsWith('/gyms') && !pathname.startsWith('/gyms/compare');
-  const isCompare = pathname.startsWith('/compare') || pathname === '/gyms/compare';
+  const isExplore = pathname.startsWith('/venues') && !pathname.startsWith('/venues/compare');
+  const isCompare = pathname.startsWith('/compare') || pathname === '/venues/compare';
   const isBookings = pathname === '/dashboard' && tab !== 'saved';
   const isWishlist = pathname === '/dashboard' && tab === 'saved';
   const isPartners = pathname.startsWith('/partners');
@@ -25,7 +25,7 @@ function NavLinksList({ session }) {
   return (
     <div className="nav-links">
       <Link href="/" className={`nav-link ${isHome ? 'active' : ''}`}>Home</Link>
-      <Link href="/gyms" className={`nav-link ${isExplore ? 'active' : ''}`}>Explore</Link>
+      <Link href="/venues" className={`nav-link ${isExplore ? 'active' : ''}`}>Explore</Link>
       {session && (
         <>
           {session.user.role === 'admin' ? (
@@ -53,7 +53,7 @@ function MobileNavLinksList({ session, setMobileOpen }) {
   const tab = searchParams.get('tab');
 
   const isHome = pathname === '/';
-  const isExplore = pathname.startsWith('/gyms') && !pathname.startsWith('/gyms/compare');
+  const isExplore = pathname.startsWith('/venues') && !pathname.startsWith('/venues/compare');
   const isBookings = pathname === '/dashboard' && tab !== 'saved';
   const isWishlist = pathname === '/dashboard' && tab === 'saved';
   const isPartners = pathname.startsWith('/partners');
@@ -66,7 +66,7 @@ function MobileNavLinksList({ session, setMobileOpen }) {
   return (
     <>
       <Link href="/" className={`drawer-link ${isHome ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Home</Link>
-      <Link href="/gyms" className={`drawer-link ${isExplore ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Find Gyms</Link>
+      <Link href="/venues" className={`drawer-link ${isExplore ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Find Venues</Link>
       <Link href="/plans" className={`drawer-link ${isPlans ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Plans</Link>
       <Link href="/blogs" className={`drawer-link ${isBlogs ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Blogs</Link>
       <Link href="/partners" className={`drawer-link ${isPartners ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Let's Collab</Link>
@@ -83,7 +83,7 @@ function MobileNavLinksList({ session, setMobileOpen }) {
             <>
               <Link href="/dashboard" className={`drawer-link ${isDashboard ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Dashboard</Link>
               <Link href="/dashboard?tab=upcoming" className={`drawer-link ${isBookings ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>My Bookings</Link>
-              <Link href="/dashboard?tab=saved" className={`drawer-link ${isWishlist ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Gym Wishlist</Link>
+              <Link href="/dashboard?tab=saved" className={`drawer-link ${isWishlist ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>Venue Wishlist</Link>
             </>
           )}
           <button className="drawer-link" onClick={() => { signOut({ callbackUrl: '/' }); setMobileOpen(false); }} style={{ textAlign: 'left' }}>Sign out</button>
@@ -143,7 +143,7 @@ export default function Navbar() {
           <Suspense fallback={
               <div className="nav-links">
               <Link href="/" className="nav-link">Home</Link>
-              <Link href="/gyms" className="nav-link">Explore</Link>
+              <Link href="/venues" className="nav-link">Explore</Link>
               <Link href="/partners" className="nav-link">Let's Collab</Link>
             </div>
           }>
@@ -203,7 +203,7 @@ export default function Navbar() {
               <Suspense fallback={
                 <>
                   <Link href="/" className="drawer-link" onClick={() => setMobileOpen(false)}>Home</Link>
-                  <Link href="/gyms" className="drawer-link" onClick={() => setMobileOpen(false)}>Find Gyms</Link>
+                  <Link href="/venues" className="drawer-link" onClick={() => setMobileOpen(false)}>Find Venues</Link>
                   <Link href="/partners" className="drawer-link" onClick={() => setMobileOpen(false)}>Let's Collab</Link>
                 </>
               }>
@@ -220,9 +220,9 @@ export default function Navbar() {
           <Home size={20} />
           <span>Home</span>
         </Link>
-        <Link href="/gyms" className="bottom-nav-item">
+        <Link href="/venues" className="bottom-nav-item">
           <MapPin size={20} />
-          <span>Gyms</span>
+          <span>Venues</span>
         </Link>
         {session ? (
           <Link href={session.user.role === 'admin' ? "/admin" : (session.user.role === 'partner' ? "/partner" : "/dashboard")} className="bottom-nav-item">

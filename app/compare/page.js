@@ -14,9 +14,9 @@ const COMPARE_ROWS = [
   { key: 'city', label: 'Location', format: v => v, best: null, unit: '' },
 ];
 
-function getBestIdx(gyms, key, best) {
+function getBestIdx(venues, key, best) {
   if (!best || best === null) return null;
-  const vals = gyms.map(g => {
+  const vals = venues.map(g => {
     const v = g[key];
     if (key === 'crowdLevel') return v === 'low' ? 0 : v === 'moderate' ? 1 : 2;
     return Number(v);
@@ -31,18 +31,18 @@ function CompareContent() {
   const router = useRouter();
   const ids = searchParams.get('ids')?.split(',').filter(Boolean) || [];
 
-  const [gyms, setGyms] = useState([]);
+  const [venues, setGyms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (ids.length === 0) { setLoading(false); return; }
-    Promise.all(ids.map(id => fetch(`/api/gyms/${id}`).then(r => r.json())))
+    Promise.all(ids.map(id => fetch(`/api/venues/${id}`).then(r => r.json())))
       .then(results => {
         setGyms(results.filter(g => g && !g.error));
         setLoading(false);
       })
-      .catch(() => { setError('Failed to load gyms.'); setLoading(false); });
+      .catch(() => { setError('Failed to load venues.'); setLoading(false); });
   }, [searchParams]);
 
   if (loading) return (
@@ -52,17 +52,17 @@ function CompareContent() {
     </div>
   );
 
-  if (ids.length === 0 || gyms.length === 0) return (
+  if (ids.length === 0 || venues.length === 0) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, padding: 40 }}>
       <AlertTriangle size={56} style={{ color: 'var(--muted)' }} strokeWidth={1.5} />
-      <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>No gyms selected</h2>
-      <p style={{ color: 'var(--muted)', textAlign: 'center' }}>Select 2–3 gyms from the Explore page to start comparing.</p>
-      <Link href="/gyms" className="btn-primary" style={{ padding: '12px 28px', borderRadius: 12, display: 'inline-block' }}>Explore Gyms</Link>
+      <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>No venues selected</h2>
+      <p style={{ color: 'var(--muted)', textAlign: 'center' }}>Select 2–3 venues from the Explore page to start comparing.</p>
+      <Link href="/venues" className="btn-primary" style={{ padding: '12px 28px', borderRadius: 12, display: 'inline-block' }}>Explore Venues</Link>
     </div>
   );
 
   // Compute overall winner (best price + best rating composite)
-  const scores = gyms.map(g => (g.rating / 5) * 0.5 + (1 - g.pricePerHour / Math.max(...gyms.map(x => x.pricePerHour))) * 0.5);
+  const scores = venues.map(g => (g.rating / 5) * 0.5 + (1 - g.pricePerHour / Math.max(...venues.map(x => x.pricePerHour))) * 0.5);
   const winnerIdx = scores.indexOf(Math.max(...scores));
 
   return (
@@ -77,18 +77,18 @@ function CompareContent() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 900 }}>Gym Comparison</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Comparing {gyms.length} gym{gyms.length > 1 ? 's' : ''} side by side</p>
+            <h1 style={{ fontSize: '2rem', fontWeight: 900 }}>Venue Comparison</h1>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Comparing {venues.length} gym{venues.length > 1 ? 's' : ''} side by side</p>
           </div>
         </div>
 
         {/* Comparison Scroll Wrapper */}
         <div style={{ overflowX: 'auto', paddingBottom: 24, margin: '0 -16px', padding: '0 16px' }}>
-          <div style={{ minWidth: gyms.length > 2 ? 100 + gyms.length * 150 : 'auto' }}>
-            {/* Gym header cards */}
-        <div className="compare-grid" style={{ '--cols': gyms.length, gap: 16, marginBottom: 8, alignItems: 'start' }}>
+          <div style={{ minWidth: venues.length > 2 ? 100 + venues.length * 150 : 'auto' }}>
+            {/* Venue header cards */}
+        <div className="compare-grid" style={{ '--cols': venues.length, gap: 16, marginBottom: 8, alignItems: 'start' }}>
           <div />
-          {gyms.map((gym, i) => (
+          {venues.map((gym, i) => (
             <motion.div
               key={gym._id}
               initial={{ opacity: 0, y: 20 }}
@@ -115,7 +115,7 @@ function CompareContent() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12 }}>
                   <MapPin size={11} /> {gym.city}
                 </div>
-                <Link href={`/gyms/${gym._id}`}>
+                <Link href={`/venues/${gym._id}`}>
                   <button className="btn-primary" style={{ width: '100%', padding: '9px', borderRadius: 10, fontSize: '0.82rem' }}>Book Now</button>
                 </Link>
               </div>
@@ -126,15 +126,15 @@ function CompareContent() {
         {/* Comparison Table */}
         <div style={{ background: 'var(--surface-alt)', border: '1px solid var(--line)', borderRadius: 20, overflow: 'hidden', marginBottom: 40 }}>
           {COMPARE_ROWS.map((row, ri) => {
-            const bestIdx = getBestIdx(gyms, row.key, row.best);
+            const bestIdx = getBestIdx(venues, row.key, row.best);
             return (
               <div
                 key={row.key}
                 className="compare-grid"
-                style={{ '--cols': gyms.length, borderBottom: ri < COMPARE_ROWS.length - 1 ? '1px solid var(--line)' : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                style={{ '--cols': venues.length, borderBottom: ri < COMPARE_ROWS.length - 1 ? '1px solid var(--line)' : 'none', background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
               >
                 <div style={{ padding: '18px 24px', fontWeight: 700, color: 'var(--muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>{row.label}</div>
-                {gyms.map((gym, gi) => {
+                {venues.map((gym, gi) => {
                   const isBest = bestIdx === gi;
                   return (
                     <div
@@ -156,17 +156,17 @@ function CompareContent() {
         {/* Amenities comparison */}
         <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 20 }}>Amenities</h3>
         {(() => {
-          const allAmenities = [...new Set(gyms.flatMap(g => g.amenities || []))].sort();
+          const allAmenities = [...new Set(venues.flatMap(g => g.amenities || []))].sort();
           return (
             <div style={{ background: 'var(--surface-alt)', border: '1px solid var(--line)', borderRadius: 20, overflow: 'hidden', marginBottom: 40 }}>
               {allAmenities.map((amenity, ai) => (
                 <div
                   key={amenity}
                   className="compare-grid"
-                  style={{ '--cols': gyms.length, borderBottom: ai < allAmenities.length - 1 ? '1px solid var(--line)' : 'none', background: ai % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                  style={{ '--cols': venues.length, borderBottom: ai < allAmenities.length - 1 ? '1px solid var(--line)' : 'none', background: ai % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
                 >
                   <div style={{ padding: '14px 24px', color: 'var(--soft)', fontSize: '0.88rem', display: 'flex', alignItems: 'center' }}>{amenity}</div>
-                  {gyms.map(gym => {
+                  {venues.map(gym => {
                     const has = (gym.amenities || []).includes(amenity);
                     return (
                       <div key={gym._id} style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--line)' }}>
@@ -188,17 +188,17 @@ function CompareContent() {
         {/* Equipment comparison */}
         <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 20 }}>Equipment</h3>
         {(() => {
-          const allEquipment = [...new Set(gyms.flatMap(g => g.equipment || []))].sort();
+          const allEquipment = [...new Set(venues.flatMap(g => g.equipment || []))].sort();
           return (
             <div style={{ background: 'var(--surface-alt)', border: '1px solid var(--line)', borderRadius: 20, overflow: 'hidden', marginBottom: 60 }}>
               {allEquipment.map((eq, ei) => (
                 <div
                   key={eq}
                   className="compare-grid"
-                  style={{ '--cols': gyms.length, borderBottom: ei < allEquipment.length - 1 ? '1px solid var(--line)' : 'none', background: ei % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
+                  style={{ '--cols': venues.length, borderBottom: ei < allEquipment.length - 1 ? '1px solid var(--line)' : 'none', background: ei % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}
                 >
                   <div style={{ padding: '14px 24px', color: 'var(--soft)', fontSize: '0.88rem', display: 'flex', alignItems: 'center' }}>{eq}</div>
-                  {gyms.map(gym => {
+                  {venues.map(gym => {
                     const has = (gym.equipment || []).includes(eq);
                     return (
                       <div key={gym._id} style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid var(--line)' }}>
@@ -224,8 +224,8 @@ function CompareContent() {
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: 'var(--muted)', marginBottom: 20 }}>Ready to decide? Book your slot now.</p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {gyms.map(gym => (
-              <Link key={gym._id} href={`/gyms/${gym._id}`}>
+            {venues.map(gym => (
+              <Link key={gym._id} href={`/venues/${gym._id}`}>
                 <button className="btn-primary" style={{ padding: '12px 24px', borderRadius: 12 }}>Book {gym.name}</button>
               </Link>
             ))}

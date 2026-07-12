@@ -97,7 +97,7 @@
     "_id": "mppgl4uvx4g49l"
   },
   {
-    "name": "Chisel Gym Prahlad Nagar",
+    "name": "Chisel Venue Prahlad Nagar",
     "address": "Prahlad Nagar, Satellite",
     "city": "Ahmedabad",
     "description": "Boutique gym with personalized coaching and small group training.",
@@ -107,7 +107,7 @@
     "crowdLevel": "low",
     "hours": "06:00 - 22:00",
     "phone": "+91 79 4567 8901",
-    "email": "chisel@gyms.in",
+    "email": "chisel@venues.in",
     "image": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80&fit=crop",
     "amenities": [
       "AC",

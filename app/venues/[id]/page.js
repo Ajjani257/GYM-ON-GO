@@ -42,7 +42,7 @@ export default function GymDetail({ params }) {
 
   const fetchReviewStatus = () => {
     if (session?.user?.id) {
-      fetch(`/api/reviews/status?gymId=${id}`, { cache: 'no-store' })
+      fetch(`/api/reviews/status?venueId=${id}`, { cache: 'no-store' })
         .then(r => r.json())
         .then(setReviewEligibility)
         .catch(err => console.error('Failed to fetch review status:', err));
@@ -52,8 +52,8 @@ export default function GymDetail({ params }) {
   };
 
   useEffect(() => {
-    fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
-    fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+    fetch(`/api/venues/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+    fetch(`/api/reviews?venueId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
   }, [id]);
 
   useEffect(() => {
@@ -124,9 +124,9 @@ export default function GymDetail({ params }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: session.user.id, gymId: id, date: selectedDate,
+        userId: session.user.id, venueId: id, date: selectedDate,
         timeSlot: selectedSlot, price: gym.pricePerHour,
-        gymName: gym.name, gymAddress: gym.address,
+        venueName: gym.name, venueAddress: gym.address,
       }),
     });
     if (res.ok) {
@@ -186,7 +186,7 @@ export default function GymDetail({ params }) {
       const res = await fetch('/api/user/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gymId: id })
+        body: JSON.stringify({ venueId: id })
       });
       
       if (!res.ok) {
@@ -213,7 +213,7 @@ export default function GymDetail({ params }) {
     const res = await fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: session.user.id, gymId: id, rating: newReviewRating, comment: newReviewComment })
+      body: JSON.stringify({ userId: session.user.id, venueId: id, rating: newReviewRating, comment: newReviewComment })
     });
     setIsSubmittingReview(false);
     if (res.ok) {
@@ -221,9 +221,9 @@ export default function GymDetail({ params }) {
       setNewReviewComment('');
       setNewReviewRating(5);
       // Refresh reviews & status & gym rating
-      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetch(`/api/reviews?venueId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
       fetchReviewStatus();
-      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+      fetch(`/api/venues/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     } else {
       const data = await res.json();
       addToast(data.error || 'Failed to submit review', 'error');
@@ -244,9 +244,9 @@ export default function GymDetail({ params }) {
       addToast('Review updated successfully!', 'success');
       setIsEditingReview(false);
       // Refresh reviews & status & gym rating
-      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetch(`/api/reviews?venueId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
       fetchReviewStatus();
-      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+      fetch(`/api/venues/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     } else {
       const data = await res.json();
       addToast(data.error || 'Failed to update review', 'error');
@@ -264,9 +264,9 @@ export default function GymDetail({ params }) {
     if (res.ok) {
       addToast('Review deleted successfully!', 'success');
       // Refresh reviews & status & gym rating
-      fetch(`/api/reviews?gymId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
+      fetch(`/api/reviews?venueId=${id}`, { cache: 'no-store' }).then(r => r.json()).then(setReviews);
       fetchReviewStatus();
-      fetch(`/api/gyms/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
+      fetch(`/api/venues/${id}`, { cache: 'no-store' }).then(r => r.json()).then(setGym);
     } else {
       const data = await res.json();
       addToast(data.error || 'Failed to delete review', 'error');
@@ -648,7 +648,7 @@ export default function GymDetail({ params }) {
             <h2>Booking confirmed!</h2>
             <p className="sub">Your session has been booked successfully.</p>
             <div className="modal-details">
-              <p><span>Gym</span><span>{gym.name}</span></p>
+              <p><span>Venue</span><span>{gym.name}</span></p>
               <p><span>Date</span><span>{formatDate(selectedDate)}</span></p>
               <p><span>Time</span><span>{selectedSlot}</span></p>
               <p><span>Paid</span><span>₹{gym.pricePerHour} (Wallet)</span></p>

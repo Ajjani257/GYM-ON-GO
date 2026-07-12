@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 mongoose.connect(process.env.MONGODB_URI);
 
 const PartnerSchema = new mongoose.Schema({
-  gymName: String,
+  venueName: String,
   email: String,
   status: String,
   rejectionReason: String

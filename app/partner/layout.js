@@ -27,7 +27,7 @@ export default function PartnerLayout({ children }) {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
         <div className="detail-card" style={{ maxWidth: '480px', padding: '40px' }}>
           <h2 style={{ color: 'var(--red)', marginBottom: '16px' }}>Access Denied</h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '24px' }}>This section is restricted to registered Gym Partners only.</p>
+          <p style={{ color: 'var(--muted)', marginBottom: '24px' }}>This section is restricted to registered Venue Partners only.</p>
           <Link href="/"><button className="btn-primary">Return Home</button></Link>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function PartnerLayout({ children }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', paddingBottom: '24px', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <span style={{ fontSize: '0.8rem', letterSpacing: '0.08em', color: 'var(--red)', fontWeight: 800, textTransform: 'uppercase' }}>Partner Console</span>
-          <h1 className="dash-title" style={{ fontSize: '2.4rem', marginTop: '4px' }}>Gym Management</h1>
+          <h1 className="dash-title" style={{ fontSize: '2.4rem', marginTop: '4px' }}>Venue Management</h1>
         </div>
         
         {/* Navigation Tabs */}

@@ -16,23 +16,23 @@ export async function GET(request) {
 
     await dbConnect();
     const { searchParams } = new URL(request.url);
-    const gymId = searchParams.get('gymId');
+    const venueId = searchParams.get('venueId');
 
-    if (!gymId) {
-      return NextResponse.json({ error: 'gymId required' }, { status: 400 });
+    if (!venueId) {
+      return NextResponse.json({ error: 'venueId required' }, { status: 400 });
     }
 
     // Check if the user has a completed booking at the gym (finished workout)
     const hasBooked = await Booking.findOne({
       userId: session.user.id,
-      gymId,
+      venueId,
       status: 'completed'
     });
 
     // Find if the user has already written a review for this gym
     const userReview = await Review.findOne({
       userId: session.user.id,
-      gymId
+      venueId
     });
 
     return NextResponse.json({

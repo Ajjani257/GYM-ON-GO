@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
   walletBalance: { type: Number, default: 0 },
   loyaltyPoints: { type: Number, default: 0 },
   lifetimePoints: { type: Number, default: 0 },
-  favoriteGyms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Gym' }],
+  favoriteGyms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Venue' }],
   role: { type: String, enum: ['member', 'partner', 'admin'], default: 'member' },
   referralCode: { type: String, unique: true, sparse: true },
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

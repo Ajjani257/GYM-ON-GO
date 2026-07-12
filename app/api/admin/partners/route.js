@@ -1,7 +1,7 @@
 import dbConnect from '@/lib/mongodb';
 import Partner from '@/models/Partner';
 import User from '@/models/User';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import { sendSimulatedEmail, getEmailHtmlTemplate } from '@/lib/emailSimulator';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -59,7 +59,7 @@ export async function POST(request) {
       const rejectionHtmlContent = `
         <h1>Application Status Update</h1>
         <p>Hi <strong>${application.ownerName}</strong>,</p>
-        <p>Thank you for applying to the Clickongo Partner Network. We appreciate the time you took to share details about "<strong>${application.gymName}</strong>".</p>
+        <p>Thank you for applying to the Clickongo Partner Network. We appreciate the time you took to share details about "<strong>${application.venueName}</strong>".</p>
         <p>Unfortunately, after carefully reviewing your application against our current network criteria and quality standards, we are unable to proceed with your onboarding at this time.</p>
         
         ${reason ? `
@@ -83,7 +83,7 @@ export async function POST(request) {
       await sendSimulatedEmail({
         to: application.email,
         subject: `Clickongo Partner Application Status Update`,
-        body: `Hi ${application.ownerName},\n\nThank you for applying to the Clickongo Partner Network.\n\nWe appreciate the time you took to share details about "${application.gymName}".\n\n${rejectionMessage}\n\nBest regards,\nClickongo Onboarding Team`,
+        body: `Hi ${application.ownerName},\n\nThank you for applying to the Clickongo Partner Network.\n\nWe appreciate the time you took to share details about "${application.venueName}".\n\n${rejectionMessage}\n\nBest regards,\nClickongo Onboarding Team`,
         html: rejectionHtml
       });
 
@@ -133,9 +133,9 @@ export async function POST(request) {
         { time: '20:00 - 21:00', capacity: 15 }
       ];
 
-      // 2. Create the Gym Profile in database
-      const gym = await Gym.create({
-        name: application.gymName,
+      // 2. Create the Venue Profile in database
+      const gym = await Venue.create({
+        name: application.venueName,
         address,
         city: application.city,
         description,
@@ -159,18 +159,18 @@ export async function POST(request) {
 
       // 4. Send welcome email with login credentials
       const welcomeSubject = existingUser
-        ? `🎉 Welcome Back to Clickongo! Your New Gym "${application.gymName}" is Live`
+        ? `🎉 Welcome Back to Clickongo! Your New Venue "${application.venueName}" is Live`
         : `🎉 Welcome to Clickongo! Your Partner Account is Live`;
 
       let welcomeBody = '';
       let welcomeHtmlContent = '';
 
       if (existingUser) {
-        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.gymName}" to the Clickongo Network!\n\nThis gym has been successfully linked to your existing partner account (${application.email}).\n\nYou can manage this gym profile by logging in using your existing dashboard credentials.\n\nDashboard URL: http://localhost:3000/auth\n\nBest regards,\nClickongo Team`;
+        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.venueName}" to the Clickongo Network!\n\nThis gym has been successfully linked to your existing partner account (${application.email}).\n\nYou can manage this gym profile by logging in using your existing dashboard credentials.\n\nDashboard URL: http://localhost:3000/auth\n\nBest regards,\nClickongo Team`;
 
         welcomeHtmlContent = `
           <h1>Congratulations ${application.ownerName},</h1>
-          <p>We are thrilled to inform you that your application has been approved and <strong>${application.gymName}</strong> is officially live in the Clickongo network!</p>
+          <p>We are thrilled to inform you that your application has been approved and <strong>${application.venueName}</strong> is officially live in the Clickongo network!</p>
           <p>This gym has been successfully linked to your existing partner account (<strong>${application.email}</strong>).</p>
           <p>You can manage this profile by logging in with your existing credentials at the Partner Dashboard.</p>
           
@@ -181,14 +181,14 @@ export async function POST(request) {
           <p>Sincerely,<br><strong>The Clickongo Team</strong></p>
         `;
       } else {
-        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.gymName}" to the Clickongo Network!\n\nYour facilities have been verified and your profile is now live.\n\nYour Partner Dashboard Login Credentials:\n- Dashboard URL: http://localhost:3000/auth\n- Username/Email: ${application.email}\n- Temporary Password: ${rawPassword}\n\nPlease log in and change your password. You can manage timing slots, pricing rules, and scan visitor QR codes.\n\nBest regards,\nClickongo Team`;
+        welcomeBody = `Hi ${application.ownerName},\n\nWe are thrilled to welcome "${application.venueName}" to the Clickongo Network!\n\nYour facilities have been verified and your profile is now live.\n\nYour Partner Dashboard Login Credentials:\n- Dashboard URL: http://localhost:3000/auth\n- Username/Email: ${application.email}\n- Temporary Password: ${rawPassword}\n\nPlease log in and change your password. You can manage timing slots, pricing rules, and scan visitor QR codes.\n\nBest regards,\nClickongo Team`;
 
         welcomeHtmlContent = `
           <h1>Congratulations ${application.ownerName},</h1>
-          <p>We are thrilled to inform you that your application has been approved and <strong>${application.gymName}</strong> is officially live in the Clickongo network!</p>
+          <p>We are thrilled to inform you that your application has been approved and <strong>${application.venueName}</strong> is officially live in the Clickongo network!</p>
           <p>Our representative has verified your facility details, and your public profile is now visible to members in the explore section.</p>
           
-          <p>Your Gym Partner Dashboard has been successfully created. Please use the secure credentials below to log in and manage your gym profile:</p>
+          <p>Your Venue Partner Dashboard has been successfully created. Please use the secure credentials below to log in and manage your gym profile:</p>
           
           <div class="highlight-box" style="border-left-color: #10b981; background-color: #f0fdf4;">
             <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; color: #065f46; text-transform: uppercase;">Your Login Credentials</h3>
@@ -243,7 +243,7 @@ export async function POST(request) {
           email: application.email,
           password: rawPassword,
         },
-        gymId: gym._id,
+        venueId: gym._id,
       });
     }
 

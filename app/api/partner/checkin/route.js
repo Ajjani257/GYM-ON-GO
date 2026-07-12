@@ -1,6 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import User from '@/models/User';
 import Transaction from '@/models/Transaction';
 import { getServerSession } from 'next-auth';
@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
     // Find gym owned by this partner
-    const gym = await Gym.findOne({ ownerId: session.user.id });
+    const gym = await Venue.findOne({ ownerId: session.user.id });
     if (!gym) {
       return NextResponse.json({ error: 'No gym associated with this partner account' }, { status: 404 });
     }
@@ -35,7 +35,7 @@ export async function POST(request) {
     }
 
     // Ensure booking belongs to partner's gym
-    if (booking.gymId.toString() !== gym._id.toString()) {
+    if (booking.venueId.toString() !== gym._id.toString()) {
       return NextResponse.json({ error: 'This booking belongs to another gym' }, { status: 403 });
     }
 

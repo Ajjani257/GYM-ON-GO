@@ -133,7 +133,7 @@ function AuthContent() {
         <div className="auth-left-overlay"></div>
         <div className="auth-left-text">
           <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 900 }}>Your fitness<br/><span style={{ color: 'var(--red)' }}>journey</span><br/>starts here</h2>
-          <p>Get instant, flexible access to premium local gyms with a single scan. No monthly subscriptions, no contracts.</p>
+          <p>Get instant, flexible access to premium local venues with a single scan. No monthly subscriptions, no contracts.</p>
         </div>
       </div>
       <div className="auth-right">

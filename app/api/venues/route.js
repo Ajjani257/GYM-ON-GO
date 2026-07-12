@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/mongodb';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +15,7 @@ export async function GET(request) {
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
     const equip = searchParams.get('equipment');
+    const category = searchParams.get('category');
 
     const userLat = searchParams.get('userLat');
     const userLng = searchParams.get('userLng');
@@ -23,6 +24,7 @@ export async function GET(request) {
     if (crowd) query.crowdLevel = crowd;
     if (maxPrice) query.pricePerHour = { $lte: Number(maxPrice) };
     if (equip) query.equipment = { $all: equip.split(',') };
+    if (category) query.category = category;
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -30,7 +32,7 @@ export async function GET(request) {
       ];
     }
 
-    let gyms = await Gym.find(query);
+    let venues = await Venue.find(query);
 
     // Calculate distance if user location is provided
     if (userLat && userLng) {
@@ -39,7 +41,7 @@ export async function GET(request) {
       
       const R = 6371; // Radius of the earth in km
       
-      gyms = gyms.map(gym => {
+      venues = venues.map(gym => {
         const gymObj = gym.toObject();
         if (gymObj.location && gymObj.location.lat && gymObj.location.lng) {
           const lat2 = gymObj.location.lat;
@@ -56,13 +58,13 @@ export async function GET(request) {
           
           gymObj.distanceKm = Number(distance.toFixed(1));
         } else {
-          gymObj.distanceKm = Infinity; // Gym has no location
+          gymObj.distanceKm = Infinity; // Venue has no location
         }
         return gymObj;
       });
     }
 
-    gyms.sort((a, b) => {
+    venues.sort((a, b) => {
       const pA = a.priority || 0;
       const pB = b.priority || 0;
       
@@ -80,7 +82,7 @@ export async function GET(request) {
       return b.rating - a.rating;
     });
 
-    return NextResponse.json(gyms);
+    return NextResponse.json(venues);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -87,7 +87,7 @@ export default function BlogsPage() {
 
         {/* ARTICLES GRID */}
         {loading ? (
-          <div className="gyms-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+          <div className="venues-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
             {[...Array(3)].map((_, i) => (
               <div className="gym-card skeleton-card" key={i}>
                 <div className="skeleton-img" style={{ height: '200px' }} />
@@ -106,7 +106,7 @@ export default function BlogsPage() {
           </div>
         ) : (
           <motion.div 
-            className="gyms-grid" 
+            className="venues-grid" 
             variants={containerVariants} 
             initial="hidden" 
             animate="visible"

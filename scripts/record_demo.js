@@ -31,11 +31,11 @@ async function record() {
     await wait(2000);
 
     // 2. Click "Find a gym near you"
-    console.log('Clicking to find gyms...');
+    console.log('Clicking to find venues...');
     await page.click('.btn-primary');
     await wait(2000);
 
-    // Scroll to see gyms
+    // Scroll to see venues
     await page.evaluate(() => window.scrollBy({ top: 300, behavior: 'smooth' }));
     await wait(2000);
 
@@ -72,10 +72,10 @@ async function record() {
     await page.evaluate(() => window.scrollBy({ top: 200, behavior: 'smooth' }));
     await wait(2000);
     
-    // Click Saved Gyms
+    // Click Saved Venues
     await page.evaluate(() => {
       const tabs = Array.from(document.querySelectorAll('.tab'));
-      const savedTab = tabs.find(t => t.textContent.includes('Saved Gyms'));
+      const savedTab = tabs.find(t => t.textContent.includes('Saved Venues'));
       if(savedTab) savedTab.click();
     });
     await wait(2000);

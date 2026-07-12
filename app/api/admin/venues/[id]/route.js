@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/mongodb';
-import Gym from '@/models/Gym';
+import Venue from '@/models/Venue';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { NextResponse } from 'next/server';
@@ -19,9 +19,9 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Valid priority value is required' }, { status: 400 });
     }
 
-    const targetGym = await Gym.findById(id);
+    const targetGym = await Venue.findById(id);
     if (!targetGym) {
-      return NextResponse.json({ error: 'Gym not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Venue not found' }, { status: 404 });
     }
 
     const oldPriority = targetGym.priority || 0;
@@ -29,7 +29,7 @@ export async function PATCH(request, { params }) {
 
     // If new priority is greater than 0, exchange with the gym that currently has it
     if (newPriority > 0 && newPriority !== oldPriority) {
-      const swapGym = await Gym.findOne({ priority: newPriority, _id: { $ne: id } });
+      const swapGym = await Venue.findOne({ priority: newPriority, _id: { $ne: id } });
       if (swapGym) {
         swapGym.priority = oldPriority;
         await swapGym.save();

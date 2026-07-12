@@ -13,9 +13,10 @@ export default function GymsPage() {
   const { addToast } = useToast();
   const router = useRouter();
 
-  const [gyms, setGyms] = useState([]);
+  const [venues, setGyms] = useState([]);
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
+  const [category, setCategory] = useState('');
   const [maxPrice, setMaxPrice] = useState(400);
   const [equipment, setEquipment] = useState([]);
   const [sort, setSort] = useState('featured');
@@ -49,6 +50,7 @@ export default function GymsPage() {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (city) params.set('city', city);
+    if (category) params.set('category', category);
     if (maxPrice < 400) params.set('maxPrice', maxPrice);
     if (equipment.length > 0) params.set('equipment', equipment.join(','));
     if (userLocation) {
@@ -56,16 +58,16 @@ export default function GymsPage() {
       params.set('userLng', userLocation.lng);
     }
 
-    const res = await fetch(`/api/gyms?${params}`, { cache: 'no-store' });
+    const res = await fetch(`/api/venues?${params}`, { cache: 'no-store' });
     const data = await res.json();
     setGyms(data);
     setLoading(false);
   }
 
-  useEffect(() => { const t = setTimeout(fetchGyms, 300); return () => clearTimeout(t); }, [search, city, maxPrice, equipment, userLocation]);
+  useEffect(() => { const t = setTimeout(fetchGyms, 300); return () => clearTimeout(t); }, [search, city, category, maxPrice, equipment, userLocation]);
 
   const sortedGyms = useMemo(() => {
-    const sorted = [...gyms];
+    const sorted = [...venues];
     sorted.sort((a, b) => {
       // If we are sorting by nearby, distance takes absolute precedence
       if (sort === 'nearby' && a.distanceKm !== undefined && b.distanceKm !== undefined) {
@@ -101,7 +103,7 @@ export default function GymsPage() {
       }
     });
     return sorted;
-  }, [gyms, sort]);
+  }, [venues, sort]);
 
   function requestLocation() {
     setLocationLoading(true);
@@ -134,22 +136,22 @@ export default function GymsPage() {
     );
   }
 
-  async function toggleFavorite(e, gymId) {
+  async function toggleFavorite(e, venueId) {
     e.preventDefault();
     if (!session) { addToast('Please sign in to save favorites', 'error'); return; }
     
-    const isFav = favorites.includes(gymId);
+    const isFav = favorites.includes(venueId);
     const previousFavorites = favorites;
     
     // Optimistic update
-    if (isFav) setFavorites(prev => prev.filter(id => id !== gymId));
-    else setFavorites(prev => [...prev, gymId]);
+    if (isFav) setFavorites(prev => prev.filter(id => id !== venueId));
+    else setFavorites(prev => [...prev, venueId]);
     
     try {
       const res = await fetch('/api/user/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gymId })
+        body: JSON.stringify({ venueId })
       });
       
       if (!res.ok) {
@@ -175,7 +177,7 @@ export default function GymsPage() {
     e.stopPropagation();
     setCompareList(prev => {
       if (prev.find(g => g._id === gym._id)) return prev.filter(g => g._id !== gym._id);
-      if (prev.length >= 3) { addToast('You can compare up to 3 gyms at once', 'error'); return prev; }
+      if (prev.length >= 3) { addToast('You can compare up to 3 venues at once', 'error'); return prev; }
       return [...prev, { _id: gym._id, name: gym.name, image: gym.image }];
     });
   }
@@ -188,8 +190,8 @@ export default function GymsPage() {
   return (
     <>
       <div className="page-header"><div className="container">
-        <h1 className="page-title">Find Gyms Near You</h1>
-        <p className="page-sub">Browse verified partner gyms and book hourly sessions</p>
+        <h1 className="page-title">Find Venues Near You</h1>
+        <p className="page-sub">Browse verified partner venues and book hourly sessions</p>
       </div></div>
 
       <div className="container">
@@ -214,8 +216,8 @@ export default function GymsPage() {
             <GitCompare size={18} color="var(--blue)" />
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text)', marginBottom: 2 }}>Compare Gyms Side by Side</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Click <strong style={{ color: 'var(--blue)' }}>"+ Compare"</strong> on any gym card to select up to 3 gyms, then tap <strong style={{ color: 'var(--blue)' }}>"Compare Gyms"</strong> to see a full breakdown of price, amenities &amp; equipment.</div>
+            <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text)', marginBottom: 2 }}>Compare Venues Side by Side</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Click <strong style={{ color: 'var(--blue)' }}>"+ Compare"</strong> on any gym card to select up to 3 venues, then tap <strong style={{ color: 'var(--blue)' }}>"Compare Venues"</strong> to see a full breakdown of price, amenities &amp; equipment.</div>
           </div>
           {compareList.length > 0 && (
             <button
@@ -232,12 +234,46 @@ export default function GymsPage() {
             </button>
           )}
         </motion.div>
+
+        {/* Category Selector Pills */}
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 12, marginBottom: 24 }}>
+          {[
+            { id: '', name: 'All Sports' },
+            { id: 'gym', name: '🏋️ Gyms' },
+            { id: 'badminton', name: '🏸 Badminton' },
+            { id: 'football', name: '⚽ Football' },
+            { id: 'tennis', name: '🎾 Tennis' },
+            { id: 'swimming', name: '🏊 Swimming' },
+            { id: 'cricket', name: '🏏 Cricket' }
+          ].map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.id)}
+              style={{
+                flexShrink: 0,
+                background: category === cat.id ? 'var(--red)' : 'var(--surface)',
+                color: category === cat.id ? '#fff' : 'var(--text)',
+                border: '1px solid var(--card-border)',
+                borderRadius: 100,
+                padding: '10px 20px',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: category === cat.id ? '0 4px 12px rgba(255, 62, 0, 0.3)' : 'none'
+              }}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
         <div className="filters-bar" style={{ flexWrap: 'wrap', gap: '16px' }}>
           <div className="filter-group search-input">
             <label>Search</label>
             <div>
               <Search size={16} className="search-icon" />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Gym name or area..." />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Venue name or area..." />
             </div>
           </div>
           <div className="filter-group">
@@ -299,7 +335,7 @@ export default function GymsPage() {
         </div>
 
         {loading ? (
-          <div className="gyms-grid">
+          <div className="venues-grid">
             {[...Array(6)].map((_, i) => (
               <div className="gym-card skeleton-card" key={i}>
                 <div className="skeleton-img" />
@@ -314,12 +350,12 @@ export default function GymsPage() {
         ) : sortedGyms.length === 0 ? (
           <div className="empty-state" style={{ margin: '40px 0' }}>
             <SearchX size={56} strokeWidth={1.5} />
-            <h3>No gyms found</h3>
+            <h3>No venues found</h3>
             <p>Try adjusting your filters or search terms</p>
           </div>
         ) : (
           <motion.div
-            className="gyms-grid"
+            className="venues-grid"
             initial="hidden"
             animate="visible"
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
@@ -332,7 +368,7 @@ export default function GymsPage() {
                   key={gym._id}
                   variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}
                 >
-                  <Link href={`/gyms/${gym._id}`}>
+                  <Link href={`/venues/${gym._id}`}>
                     <div
                       className="gym-card"
                       style={{
@@ -344,6 +380,30 @@ export default function GymsPage() {
                     >
                       <div className="gym-card-img">
                         <img src={gym.image || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80'} alt={gym.name} />
+
+                        {/* Category Badge */}
+                        <div style={{
+                          position: 'absolute', top: 12, left: 12, zIndex: 10,
+                          background: 'rgba(13,13,15,0.85)',
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 8,
+                          padding: '4px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          {gym.category === 'gym' && '🏋️ Gym'}
+                          {gym.category === 'badminton' && '🏸 Badminton'}
+                          {gym.category === 'football' && '⚽ Football'}
+                          {gym.category === 'tennis' && '🎾 Tennis'}
+                          {gym.category === 'swimming' && '🏊 Swimming'}
+                          {gym.category === 'cricket' && '🏏 Cricket'}
+                          {!gym.category && '🏋️ Gym'}
+                        </div>
 
                         {/* Selected badge on image */}
                         {isComparing && (
@@ -457,7 +517,7 @@ export default function GymsPage() {
               <GitCompare size={16} color="var(--blue)" />
             </div>
 
-            {/* Gym thumbnails */}
+            {/* Venue thumbnails */}
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               {compareList.map(g => (
                 <div key={g._id} style={{ position: 'relative' }}>
@@ -515,7 +575,7 @@ export default function GymsPage() {
                 boxShadow: compareList.length >= 2 ? '0 4px 20px rgba(0,240,255,0.35)' : 'none',
               }}
             >
-              Compare Gyms <ArrowRight size={15} />
+              Compare Venues <ArrowRight size={15} />
             </button>
 
             <button

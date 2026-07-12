@@ -17,7 +17,7 @@ export default function PartnerOverview() {
   useEffect(() => {
     async function loadData() {
       try {
-        const gymRes = await fetch('/api/partner/gym', { cache: 'no-store' });
+        const gymRes = await fetch('/api/partner/venue', { cache: 'no-store' });
         const gymData = await gymRes.json();
         setGym(gymData);
 
@@ -38,7 +38,7 @@ export default function PartnerOverview() {
   }, [session]);
 
   if (loading) return <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading gym metrics...</div>;
-  if (!gym) return <div style={{ color: 'var(--red)', textAlign: 'center', padding: '40px' }}>Failed to retrieve associated Gym Profile.</div>;
+  if (!gym) return <div style={{ color: 'var(--red)', textAlign: 'center', padding: '40px' }}>Failed to retrieve associated Venue Profile.</div>;
 
   const completed = bookings.filter(b => b.status === 'completed');
   const upcoming = bookings.filter(b => b.status === 'upcoming');
@@ -101,7 +101,7 @@ export default function PartnerOverview() {
         <motion.div variants={itemVariants} className="dash-stat">
           <div className="dash-stat-icon red"><IndianRupee size={20} /></div>
           <div className="dash-stat-val">₹{totalPayout}</div>
-          <div className="dash-stat-lbl">Gym Net Revenue (85%)</div>
+          <div className="dash-stat-lbl">Venue Net Revenue (85%)</div>
         </motion.div>
         <motion.div variants={itemVariants} className="dash-stat">
           <div className="dash-stat-icon orange"><Users size={20} /></div>
