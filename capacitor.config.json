@@ -1,0 +1,9 @@
+{
+  "appId": "com.clickongo.app",
+  "appName": "Clickongo",
+  "webDir": "public",
+  "server": {
+    "url": "https://www.clickongo.in",
+    "cleartext": true
+  }
+}
