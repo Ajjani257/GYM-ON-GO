@@ -50,7 +50,7 @@ const DEMO_SCREENS = [
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 16px', gap: 12 }}>
         {/* Fake navbar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 900, fontSize: '0.7rem', letterSpacing: '-0.02em' }}>GYM-<span style={{ color: '#ff3e00' }}>ON-GO</span></span>
+          <span style={{ fontWeight: 900, fontSize: '0.7rem', letterSpacing: '-0.02em' }}>Click<span style={{ color: '#ff3e00' }}>ongo</span></span>
           <div style={{ background: '#ff3e00', borderRadius: 999, padding: '3px 10px', fontSize: '0.58rem', fontWeight: 700, color: '#fff' }}>Start Free</div>
         </div>
         {/* Hero */}
